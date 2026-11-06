@@ -16,15 +16,15 @@ public sealed class GeneradorDeFoliosSql(ContextoDeDatos ctx) : IGeneradorDeFoli
 {
     public Folio Siguiente(TipoDeOperacion tipo)
     {
-        var (secuencia, prefijo) = tipo switch
+        // Las consultas son constantes internas (nunca entrada del usuario), por eso no hay riesgo de inyección SQL.
+        var (consulta, prefijo) = tipo switch
         {
-            TipoDeOperacion.Apartado => (ContextoDeDatos.SecuenciaDeApartados, "APT"),
-            TipoDeOperacion.Venta => (ContextoDeDatos.SecuenciaDeVentas, "VTA"),
-            TipoDeOperacion.Devolucion => (ContextoDeDatos.SecuenciaDeDevoluciones, "DEV"),
-            _ => (ContextoDeDatos.SecuenciaDeComprobantes, "CMP")
+            TipoDeOperacion.Apartado => ("SELECT NEXT VALUE FOR dbo.SecuenciaDeApartados AS [Value]", "APT"),
+            TipoDeOperacion.Venta => ("SELECT NEXT VALUE FOR dbo.SecuenciaDeVentas AS [Value]", "VTA"),
+            TipoDeOperacion.Devolucion => ("SELECT NEXT VALUE FOR dbo.SecuenciaDeDevoluciones AS [Value]", "DEV"),
+            _ => ("SELECT NEXT VALUE FOR dbo.SecuenciaDeComprobantes AS [Value]", "CMP")
         };
-        // El nombre de la secuencia es una constante interna, nunca entrada del usuario.
-        var numero = ctx.Database.SqlQueryRaw<int>($"SELECT NEXT VALUE FOR dbo.{secuencia} AS [Value]").AsEnumerable().First();
+        var numero = ctx.Database.SqlQueryRaw<int>(consulta).AsEnumerable().First();
         return new Folio($"{prefijo}-{numero:000000}");
     }
 }

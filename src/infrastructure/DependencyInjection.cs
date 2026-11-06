@@ -25,7 +25,8 @@ public static class DependencyInjection
         if (!string.IsNullOrWhiteSpace(directa)) return directa;
 
         var contrasena = cfg["MSSQL_SA_PASSWORD"]
-            ?? throw new InvalidOperationException("Falta la variable de entorno MSSQL_SA_PASSWORD (o ConnectionStrings__Default).");
+            ?? throw new InvalidOperationException(
+                "Falta la variable de entorno MSSQL_SA_PASSWORD (o ConnectionStrings__Default). Defínala o cree un archivo .env a partir de .env.example.");
         return new SqlConnectionStringBuilder
         {
             DataSource = $"{cfg["DB_HOST"] ?? "localhost"},{cfg["DB_PORT"] ?? "1433"}",

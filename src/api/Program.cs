@@ -5,6 +5,8 @@ using TecnoStock.Api.Infraestructura;
 using TecnoStock.Infraestructura;
 using TecnoStock.Infraestructura.Persistencia;
 
+ArchivoEnv.CargarSiExiste();
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
