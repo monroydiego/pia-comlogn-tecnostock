@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pruebas:
+    name: Compilar, probar y verificar cobertura
+    runs-on: ubuntu-latest
+    env:
+      DB_HOST: localhost
+      DB_PORT: "1433"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # La contraseña se genera en cada ejecución y se enmascara: no hay secretos en el repositorio.
+      - name: Levantar SQL Server con una contraseña efímera
+        run: |
+          PASS="Ci-$(openssl rand -hex 12)-Aa1!"
+          echo "::add-mask::$PASS"
+          echo "MSSQL_SA_PASSWORD=$PASS" >> "$GITHUB_ENV"
+          docker run -d --name sqlserver -e ACCEPT_EULA=Y -e "MSSQL_SA_PASSWORD=$PASS" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+          for _ in $(seq 1 40); do
+            if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$PASS" -Q "SELECT 1" > /dev/null 2>&1; then
+              echo "SQL Server listo"; exit 0
+            fi
+            sleep 3
+          done
+          echo "SQL Server no arrancó"; docker logs sqlserver; exit 1
+
+      - name: Restaurar
+        run: dotnet restore TecnoStock.sln
+
+      - name: Compilar
+        run: dotnet build TecnoStock.sln --configuration Release --no-restore
+
+      # Unitarias + integración; falla si la cobertura de líneas es menor a 80% (requisito del PIA).
+      - name: Pruebas con cobertura
+        run: ./scripts/pruebas-con-cobertura.sh
+
+      - name: Publicar el informe de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: coverage/
+          if-no-files-found: ignore
+
+  compose:
+    name: Docker Compose (SQL Server, API y pruebas)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Levantar todo y esperar a que terminen las pruebas
+        run: |
+          PASS="Ci-$(openssl rand -hex 12)-Aa1!"
+          echo "::add-mask::$PASS"
+          export MSSQL_SA_PASSWORD="$PASS"
+          docker compose up --build --abort-on-container-exit --exit-code-from tests
+
+      - name: Limpiar
+        if: always()
+        run: docker compose down -v
