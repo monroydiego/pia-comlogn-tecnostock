@@ -126,6 +126,11 @@ Se conservaron los 20 términos de la Unidad 2 con sus identificadores (G-01 a G
 | G-82 | Manejador de Eventos | Técnico | Componente de la capa de aplicación que reacciona a un Domain Event después de confirmar la transacción (comprobantes, reingreso de unidades y avisos). | Nuevo |
 | G-83 | Lector | Técnico | Puerto de lectura que consulta los datos y devuelve DTO sin reconstruir aggregates (CQRS básico, ADR-004). | Nuevo |
 | G-84 | Doble de Prueba | Técnico | Implementación sustituta de un puerto o repositorio (por ejemplo, en memoria) que permite probar los casos de uso sin base de datos. | Nuevo |
+| G-85 | Datos Semilla | Técnico | Datos iniciales que se cargan al arrancar la base de datos vacía: catálogo, clientes, política comercial, sucursales y series sintéticas [Supuesto]. | Nuevo |
+| G-86 | Índice Único | Técnico | Restricción de la base de datos que impide valores repetidos; protege la serie única (RN-INV-002) y un solo apartado vigente por unidad (RN-APT-003) aun con operaciones simultáneas. | Nuevo |
+| G-87 | Value Converter | Técnico | Regla de EF Core que guarda un Value Object del dominio en una columna simple y lo reconstruye al leer; vive solo en infraestructura. | Nuevo |
+| G-88 | Publicador de Eventos | Técnico | Componente de infraestructura que entrega cada Domain Event a sus manejadores dentro del proceso, después de confirmar la transacción. | Nuevo |
+| G-89 | Problem Details | Técnico | Formato estándar (RFC 9457) de las respuestas de error de la API, con el motivo de rechazo y la alternativa sugerida. | Nuevo |
 
 ## 4. Equivalencias con los datos de ejemplo del curso
 

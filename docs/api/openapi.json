@@ -1,0 +1,994 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "TecnoStock API",
+        "description": "Ventas, apartados, devoluciones e inventario de TecnoStock (PIA, Componentes de l\u00f3gica de negocio).",
+        "version": "v1"
+    },
+    "paths": {
+        "/apartados": {
+            "post": {
+                "tags": [
+                    "Apartados"
+                ],
+                "summary": "CU-01. Aparta una unidad de un producto apartable con un anticipo (US01, US03, US11).",
+                "parameters": [
+                    {
+                        "name": "X-Usuario",
+                        "in": "header",
+                        "description": "Identificador del operador que ejecuta la operaci\u00f3n.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Rol",
+                        "in": "header",
+                        "description": "Rol del operador: Vendedor, Cajero, Supervisor o Almacen.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ApartarProductoSolicitud"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ApartarProductoSolicitud"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ApartarProductoSolicitud"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConfirmacionDeApartadoDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apartados/{folio}/convertir": {
+            "post": {
+                "tags": [
+                    "Apartados"
+                ],
+                "summary": "CU-03. Convierte un apartado vigente en venta cobrando el saldo (US07, US09).",
+                "parameters": [
+                    {
+                        "name": "folio",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Usuario",
+                        "in": "header",
+                        "description": "Identificador del operador que ejecuta la operaci\u00f3n.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Rol",
+                        "in": "header",
+                        "description": "Rol del operador: Vendedor, Cajero, Supervisor o Almacen.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ConvertirApartadoSolicitud"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ConvertirApartadoSolicitud"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ConvertirApartadoSolicitud"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VentaRegistradaDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apartados/{folio}/cancelar": {
+            "post": {
+                "tags": [
+                    "Apartados"
+                ],
+                "summary": "CU-06. Cancela un apartado vigente; solo el Supervisor (US14).",
+                "parameters": [
+                    {
+                        "name": "folio",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Usuario",
+                        "in": "header",
+                        "description": "Identificador del operador que ejecuta la operaci\u00f3n.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Rol",
+                        "in": "header",
+                        "description": "Rol del operador: Vendedor, Cajero, Supervisor o Almacen.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelarApartadoSolicitud"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelarApartadoSolicitud"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelarApartadoSolicitud"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CancelacionDeApartadoDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apartados/vencer": {
+            "post": {
+                "tags": [
+                    "Apartados"
+                ],
+                "summary": "CU-08. Vence los apartados cuya fecha l\u00edmite ya pas\u00f3 y libera sus unidades (US20). Lo ejecuta el actor Sistema.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResumenDeVencimientoDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/devoluciones": {
+            "post": {
+                "tags": [
+                    "Devoluciones"
+                ],
+                "summary": "CU-04. Solicita una devoluci\u00f3n: queda Aceptada, o EnRevision si incumple el criterio est\u00e1ndar (US08, US10).",
+                "parameters": [
+                    {
+                        "name": "X-Usuario",
+                        "in": "header",
+                        "description": "Identificador del operador que ejecuta la operaci\u00f3n.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Rol",
+                        "in": "header",
+                        "description": "Rol del operador: Vendedor, Cajero, Supervisor o Almacen.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SolicitarDevolucionSolicitud"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SolicitarDevolucionSolicitud"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SolicitarDevolucionSolicitud"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EstadoDeDevolucionDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/devoluciones/{folio}/resolucion": {
+            "post": {
+                "tags": [
+                    "Devoluciones"
+                ],
+                "summary": "CU-05. El Supervisor autoriza o deniega una devoluci\u00f3n en revisi\u00f3n (US13).",
+                "parameters": [
+                    {
+                        "name": "folio",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Usuario",
+                        "in": "header",
+                        "description": "Identificador del operador que ejecuta la operaci\u00f3n.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Rol",
+                        "in": "header",
+                        "description": "Rol del operador: Vendedor, Cajero, Supervisor o Almacen.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResolverDevolucionSolicitud"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResolverDevolucionSolicitud"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResolverDevolucionSolicitud"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EstadoDeDevolucionDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/devoluciones/{folio}": {
+            "get": {
+                "tags": [
+                    "Devoluciones"
+                ],
+                "summary": "Consulta el estado de una devoluci\u00f3n (US02).",
+                "parameters": [
+                    {
+                        "name": "folio",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EstadoDeDevolucionDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unidades": {
+            "post": {
+                "tags": [
+                    "Inventario"
+                ],
+                "summary": "CU-07. Da de alta una unidad con su n\u00famero de serie (US17).",
+                "parameters": [
+                    {
+                        "name": "X-Usuario",
+                        "in": "header",
+                        "description": "Identificador del operador que ejecuta la operaci\u00f3n.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Rol",
+                        "in": "header",
+                        "description": "Rol del operador: Vendedor, Cajero, Supervisor o Almacen.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegistrarUnidadSolicitud"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegistrarUnidadSolicitud"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegistrarUnidadSolicitud"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnidadRegistradaDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/disponibilidad/{productoId}": {
+            "get": {
+                "tags": [
+                    "Inventario"
+                ],
+                "summary": "Disponibilidad de un producto en una sucursal (US04).",
+                "parameters": [
+                    {
+                        "name": "productoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sucursalId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DisponibilidadDeProductoDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/disponibilidad/{productoId}/otras-sucursales": {
+            "get": {
+                "tags": [
+                    "Inventario"
+                ],
+                "summary": "Disponibilidad de un producto en las otras sucursales (US05). Lista vac\u00eda si ninguna tiene existencia.",
+                "parameters": [
+                    {
+                        "name": "productoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sucursalActual",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/DisponibilidadPorSucursalDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/politica/devolucion": {
+            "get": {
+                "tags": [
+                    "Politica"
+                ],
+                "summary": "Criterio de devoluci\u00f3n vigente: condiciones y plazo por categor\u00eda (US16).",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CriterioDeDevolucionDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ventas": {
+            "post": {
+                "tags": [
+                    "Ventas"
+                ],
+                "summary": "CU-02. Cierra una venta: valida serie, unidad disponible y m\u00e9todos de pago autorizados (US06, US09).",
+                "parameters": [
+                    {
+                        "name": "X-Usuario",
+                        "in": "header",
+                        "description": "Identificador del operador que ejecuta la operaci\u00f3n.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Rol",
+                        "in": "header",
+                        "description": "Rol del operador: Vendedor, Cajero, Supervisor o Almacen.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegistrarVentaSolicitud"
+                            }
+                        },
+                        "text/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegistrarVentaSolicitud"
+                            }
+                        },
+                        "application/*+json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegistrarVentaSolicitud"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VentaRegistradaDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ApartarProductoSolicitud": {
+                "type": "object",
+                "properties": {
+                    "productoId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "sucursalId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "clienteId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "anticipo": {
+                        "$ref": "#/components/schemas/PagoSolicitud"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "CancelacionDeApartadoDto": {
+                "type": "object",
+                "properties": {
+                    "folio": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "estado": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "CancelarApartadoSolicitud": {
+                "type": "object",
+                "properties": {
+                    "motivo": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "CondicionDelProducto": {
+                "enum": [
+                    "EmpaqueCerrado",
+                    "EmpaqueAbierto",
+                    "Defectuoso"
+                ],
+                "type": "string"
+            },
+            "ConfirmacionDeApartadoDto": {
+                "type": "object",
+                "properties": {
+                    "folio": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "fechaLimite": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "saldoPendiente": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "ConvertirApartadoSolicitud": {
+                "type": "object",
+                "properties": {
+                    "pagoDelSaldo": {
+                        "$ref": "#/components/schemas/PagoSolicitud"
+                    },
+                    "serieCapturada": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "CriterioDeDevolucionDto": {
+                "type": "object",
+                "properties": {
+                    "condiciones": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "nullable": true
+                    },
+                    "plazoPorCategoria": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                        },
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "DisponibilidadDeProductoDto": {
+                "type": "object",
+                "properties": {
+                    "producto": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "sucursal": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "cantidadDisponible": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "DisponibilidadPorSucursalDto": {
+                "type": "object",
+                "properties": {
+                    "sucursal": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "cantidadDisponible": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "EstadoDeDevolucionDto": {
+                "type": "object",
+                "properties": {
+                    "folio": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "estado": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "motivo": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "formaDeCompensacion": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "FormaDeCompensacion": {
+                "enum": [
+                    "Reembolso",
+                    "NotaDeCredito"
+                ],
+                "type": "string"
+            },
+            "LineaRegistradaDto": {
+                "type": "object",
+                "properties": {
+                    "productoId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "serie": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "precioUnitario": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "LineaSolicitud": {
+                "type": "object",
+                "properties": {
+                    "productoId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "serie": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "MetodoDePago": {
+                "enum": [
+                    "Efectivo",
+                    "Tarjeta",
+                    "Transferencia"
+                ],
+                "type": "string"
+            },
+            "MotivoDeDevolucionSolicitud": {
+                "type": "object",
+                "properties": {
+                    "causal": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "detalle": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "PagoSolicitud": {
+                "type": "object",
+                "properties": {
+                    "metodo": {
+                        "$ref": "#/components/schemas/MetodoDePago"
+                    },
+                    "monto": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                },
+                "additionalProperties": false,
+                "description": "Pago con m\u00e9todo y monto en MXN."
+            },
+            "RegistrarUnidadSolicitud": {
+                "type": "object",
+                "properties": {
+                    "productoId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "sucursalId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "serie": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "RegistrarVentaSolicitud": {
+                "type": "object",
+                "properties": {
+                    "sucursalId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "lineas": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LineaSolicitud"
+                        },
+                        "nullable": true
+                    },
+                    "pagos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PagoSolicitud"
+                        },
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "ResolverDevolucionSolicitud": {
+                "type": "object",
+                "properties": {
+                    "autoriza": {
+                        "type": "boolean"
+                    },
+                    "motivo": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "ResumenDeVencimientoDto": {
+                "type": "object",
+                "properties": {
+                    "apartadosVencidos": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "SolicitarDevolucionSolicitud": {
+                "type": "object",
+                "properties": {
+                    "folioDeVenta": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "productoId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "serieCapturada": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "motivo": {
+                        "$ref": "#/components/schemas/MotivoDeDevolucionSolicitud"
+                    },
+                    "condicionDelProducto": {
+                        "$ref": "#/components/schemas/CondicionDelProducto"
+                    },
+                    "formaDeCompensacion": {
+                        "$ref": "#/components/schemas/FormaDeCompensacion"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "UnidadRegistradaDto": {
+                "type": "object",
+                "properties": {
+                    "unidadId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "productoId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "sucursal": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "serie": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "estado": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "VentaRegistradaDto": {
+                "type": "object",
+                "properties": {
+                    "folio": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "lineas": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LineaRegistradaDto"
+                        },
+                        "nullable": true
+                    },
+                    "folioDeApartadoOrigen": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "additionalProperties": false
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Apartados"
+        },
+        {
+            "name": "Devoluciones"
+        },
+        {
+            "name": "Inventario"
+        },
+        {
+            "name": "Politica"
+        },
+        {
+            "name": "Ventas"
+        }
+    ]
+}
