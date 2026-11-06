@@ -120,6 +120,12 @@ Se conservaron los 20 términos de la Unidad 2 con sus identificadores (G-01 a G
 | G-76 | Cobertura | Técnico | Porcentaje del código ejercitado por las pruebas automáticas; el mínimo exigido es 80%. | Nuevo |
 | G-77 | Docker Compose | Técnico | Definición de los contenedores del sistema: base de datos, aplicación y pruebas. | Nuevo |
 | G-78 | CI/CD | Técnico | Automatización que compila, prueba y valida el proyecto en cada cambio (GitHub Actions). | Nuevo |
+| G-79 | Rechazo con efecto | Técnico | Rechazo que no descarta la transacción: el cambio válido se guarda aunque la operación pedida se rechace (por ejemplo, el vencimiento de un apartado al intentar convertirlo). Se contrasta con la violación de regla, que hace rollback (ADR-006). | Nuevo |
+| G-80 | Resultado | Técnico | Objeto que devuelven los casos de uso de escritura: indica si fue exitoso, trae el valor de respuesta o el Rechazo. | Nuevo |
+| G-81 | Alternativa Sugerida | Técnico | Indicación que acompaña a un Rechazo sobre qué hacer después (consultar otras sucursales, elegir otra unidad, capturar la serie, iniciar una venta nueva o derivar al Supervisor). | Nuevo |
+| G-82 | Manejador de Eventos | Técnico | Componente de la capa de aplicación que reacciona a un Domain Event después de confirmar la transacción (comprobantes, reingreso de unidades y avisos). | Nuevo |
+| G-83 | Lector | Técnico | Puerto de lectura que consulta los datos y devuelve DTO sin reconstruir aggregates (CQRS básico, ADR-004). | Nuevo |
+| G-84 | Doble de Prueba | Técnico | Implementación sustituta de un puerto o repositorio (por ejemplo, en memoria) que permite probar los casos de uso sin base de datos. | Nuevo |
 
 ## 4. Equivalencias con los datos de ejemplo del curso
 
