@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\domain\TecnoStock.Dominio.csproj" />
+    <ProjectReference Include="..\..\src\application\TecnoStock.Aplicacion.csproj" />
   </ItemGroup>
 
 </Project>
