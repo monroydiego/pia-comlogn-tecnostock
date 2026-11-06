@@ -2,7 +2,10 @@ classDiagram
 direction TB
 
 %% =====================================================
-%% CAPA DE DOMINIO - TecnoStock
+%% CAPA DE DOMINIO - TecnoStock (version corregida, PIA)
+%% Cambios respecto a U3: Specification, MaquinaDeEstados, Producto.permiteApartado,
+%% CondicionDelProducto, FormaDeCompensacion, EstadoDeUnidad.Defectuosa (reemplaza Devuelta),
+%% nuevos motivos de rechazo y metodos de repositorio. Ver docs/cambios/registro_de_cambios.md
 %% Los identificadores ProductoId, UnidadId, SucursalId y ClienteId
 %% son Value Objects tipados y se omiten como cajas.
 %% =====================================================
@@ -25,7 +28,7 @@ class Apartado {
   -PagoRecibido anticipo
   -VigenciaDeApartado vigencia
   -EstadoDeApartado estado
-  +Crear(folio, clienteId, unidad, precio, anticipo, politica, ahora)$ Apartado
+  +Crear(folio, clienteId, unidad, producto, precio, anticipo, politica, ahora)$ Apartado
   +EstaVigente(ahora) bool
   +SaldoPendiente() Dinero
   +Liquidar(pagoSaldo, politica, ahora) void
@@ -46,7 +49,7 @@ class UnidadInventario {
   +LiberarApartado(folioApartado) void
   +Vender(folioVenta, sucursal) void
   +VenderDesdeApartado(folioApartado, serieCapturada) void
-  +RegistrarDevolucion(folioDevolucion) void
+  +RegistrarDevolucion(folioDevolucion, condicion) void
 }
 
 class Venta {
@@ -79,10 +82,12 @@ class Devolucion {
   -Folio folioDeVenta
   -UnidadId unidadDevuelta
   -MotivoDeDevolucion motivo
+  -CondicionDelProducto condicion
+  -FormaDeCompensacion formaDeCompensacion
   -DictamenDeDevolucion dictamen
   -DecisionDeSupervisor decision
   -EstadoDeDevolucion estado
-  +Solicitar(folio, venta, productoId, serie, motivo, dictamen, operador, ahora)$ Devolucion
+  +Solicitar(folio, venta, productoId, serie, motivo, condicion, forma, dictamen, operador, ahora)$ Devolucion
   +Resolver(decision) void
 }
 
@@ -105,6 +110,7 @@ class Producto {
   -String nombre
   -CategoriaDeProducto categoria
   -bool requiereSerie
+  -bool permiteApartado
   -Dinero precioDeLista
 }
 
@@ -122,26 +128,95 @@ class ResultadoDeConversion {
   +EsExitosa() bool
 }
 
+%% ---------- Specification (ADR-007) ----------
+class IEspecificacion~T~ {
+  <<Interface>>
+  +EsSatisfechaPor(candidato) ResultadoDeRegla
+  +Y(otra) IEspecificacion
+  +O(otra) IEspecificacion
+  +No() IEspecificacion
+}
+
+class EspecificacionY {
+  <<Specification>>
+}
+
+class EspecificacionO {
+  <<Specification>>
+}
+
+class EspecificacionNo {
+  <<Specification>>
+}
+
+class EspecificacionDeProductoApartable {
+  <<Specification>>
+  +EsSatisfechaPor(producto) ResultadoDeRegla
+}
+
+class EspecificacionDeUnidadDisponibleParaVenta {
+  <<Specification>>
+  +EsSatisfechaPor(unidad) ResultadoDeRegla
+}
+
+class EspecificacionDeApartadoVigente {
+  <<Specification>>
+  +EsSatisfechaPor(apartado) ResultadoDeRegla
+}
+
+class EspecificacionDeMetodoDePagoAutorizado {
+  <<Specification>>
+  +EsSatisfechaPor(pago) ResultadoDeRegla
+}
+
+class EspecificacionDeComprobanteValido {
+  <<Specification>>
+  +EsSatisfechaPor(solicitud) ResultadoDeRegla
+}
+
+class EspecificacionDeDevolucionDentroDePlazo {
+  <<Specification>>
+  +EsSatisfechaPor(solicitud) ResultadoDeRegla
+}
+
+class EspecificacionDeCondicionAceptable {
+  <<Specification>>
+  +EsSatisfechaPor(solicitud) ResultadoDeRegla
+}
+
+%% ---------- Maquina de estados (ADR-008) ----------
+class MaquinaDeEstados~TEstado~ {
+  <<State Machine>>
+  -Map transicionesPermitidas
+  +PuedeTransicionar(desde, hacia) bool
+  +Transicionar(actual, destino) TEstado
+}
+
 class CriterioDeDevolucion {
   <<Policy>>
   -List~ReglaDeDevolucion~ reglas
-  +Evaluar(venta, linea, producto, ahora) DictamenDeDevolucion
+  +Evaluar(venta, linea, producto, condicion, ahora) DictamenDeDevolucion
 }
 
 class ReglaDeDevolucion {
   <<Interface>>
-  +Evaluar(venta, linea, producto, ahora) ResultadoDeRegla
+  +Evaluar(venta, linea, producto, condicion, ahora) ResultadoDeRegla
 }
 
 class ReglaDeComprobanteVigente {
   <<Policy>>
-  +Evaluar(venta, linea, producto, ahora) ResultadoDeRegla
+  +Evaluar(venta, linea, producto, condicion, ahora) ResultadoDeRegla
 }
 
 class ReglaDePlazoPorCategoria {
   <<Policy>>
   -Map plazoEnDiasPorCategoria
-  +Evaluar(venta, linea, producto, ahora) ResultadoDeRegla
+  +Evaluar(venta, linea, producto, condicion, ahora) ResultadoDeRegla
+}
+
+class ReglaDeCondicionDelProducto {
+  <<Policy>>
+  +Evaluar(venta, linea, producto, condicion, ahora) ResultadoDeRegla
 }
 
 class ResultadoDeRegla {
@@ -247,6 +322,7 @@ class DevolucionAceptada {
   folio
   unidadId
   folioDeVenta
+  condicion
 }
 
 class DevolucionRechazada {
@@ -267,10 +343,12 @@ class MotivoDeRechazo {
   UnidadApartada
   UnidadNoDisponible
   UnidadEnOtraSucursal
+  ProductoNoApartable
   AnticipoInsuficiente
   MetodoDePagoNoAutorizado
   SerieRequerida
   SerieNoCoincide
+  SerieDuplicada
   SaldoInsuficiente
   ApartadoVencido
   ComprobanteNoValido
@@ -294,8 +372,8 @@ class EstadoDeUnidad {
   Disponible
   Apartada
   Vendida
-  Devuelta
   EnTransito
+  Defectuosa
 }
 
 class EstadoDeDevolucion {
@@ -305,9 +383,24 @@ class EstadoDeDevolucion {
   Rechazada
 }
 
+class CondicionDelProducto {
+  <<Enumeration>>
+  EmpaqueCerrado
+  EmpaqueAbierto
+  Defectuoso
+}
+
+class FormaDeCompensacion {
+  <<Enumeration>>
+  Reembolso
+  NotaDeCredito
+}
+
 class MetodoDePago {
   <<Enumeration>>
-  pendiente de catalogo oficial
+  Efectivo
+  Tarjeta
+  Transferencia
 }
 
 class Rol {
@@ -329,6 +422,7 @@ class CategoriaDeProducto {
 class IRepositorioDeApartados {
   <<Repository>>
   +Obtener(folio) Apartado
+  +ObtenerVigentesVencidos(ahora) List~Apartado~
   +Agregar(apartado) void
   +Guardar(apartado) void
 }
@@ -337,8 +431,10 @@ class IRepositorioDeUnidades {
   <<Repository>>
   +Obtener(unidadId) UnidadInventario
   +ObtenerPorSerie(serie) UnidadInventario
+  +ExisteSerie(serie) bool
   +ObtenerUnidadDisponible(productoId, sucursal) UnidadInventario
   +ObtenerUnidadParaVenta(productoId, sucursal, serieCapturada) UnidadInventario
+  +Agregar(unidad) void
   +Guardar(unidad) void
 }
 
@@ -387,10 +483,42 @@ CriterioDeDevolucion o-- "1..*" ReglaDeDevolucion
 DictamenDeDevolucion *-- "1..*" ResultadoDeRegla
 DecisionDeSupervisor --> Operador
 Venta --> Operador : cajero
+Devolucion --> CondicionDelProducto
+Devolucion --> FormaDeCompensacion
 
-%% ---------- Politicas (Strategy) ----------
+%% ---------- Specification: composicion y especificaciones concretas ----------
+EspecificacionY ..|> IEspecificacion
+EspecificacionO ..|> IEspecificacion
+EspecificacionNo ..|> IEspecificacion
+EspecificacionDeProductoApartable ..|> IEspecificacion
+EspecificacionDeUnidadDisponibleParaVenta ..|> IEspecificacion
+EspecificacionDeApartadoVigente ..|> IEspecificacion
+EspecificacionDeMetodoDePagoAutorizado ..|> IEspecificacion
+EspecificacionDeComprobanteValido ..|> IEspecificacion
+EspecificacionDeDevolucionDentroDePlazo ..|> IEspecificacion
+EspecificacionDeCondicionAceptable ..|> IEspecificacion
+EspecificacionY o-- IEspecificacion : izquierda y derecha
+EspecificacionO o-- IEspecificacion : izquierda y derecha
+EspecificacionNo o-- IEspecificacion : original
+IEspecificacion ..> ResultadoDeRegla
+
+%% ---------- Politicas (Strategy) apoyadas en Specification ----------
 ReglaDeComprobanteVigente ..|> ReglaDeDevolucion
 ReglaDePlazoPorCategoria ..|> ReglaDeDevolucion
+ReglaDeCondicionDelProducto ..|> ReglaDeDevolucion
+ReglaDeComprobanteVigente ..> EspecificacionDeComprobanteValido
+ReglaDePlazoPorCategoria ..> EspecificacionDeDevolucionDentroDePlazo
+ReglaDeCondicionDelProducto ..> EspecificacionDeCondicionAceptable
+Apartado ..> EspecificacionDeProductoApartable : al crear
+Apartado ..> EspecificacionDeApartadoVigente
+Apartado ..> EspecificacionDeMetodoDePagoAutorizado : al liquidar
+UnidadInventario ..> EspecificacionDeUnidadDisponibleParaVenta
+Venta ..> EspecificacionDeMetodoDePagoAutorizado
+
+%% ---------- Maquina de estados ----------
+Apartado ..> MaquinaDeEstados : EstadoDeApartado
+UnidadInventario ..> MaquinaDeEstados : EstadoDeUnidad
+Devolucion ..> MaquinaDeEstados : EstadoDeDevolucion
 
 %% ---------- Referencias entre aggregates (solo por identidad) ----------
 Apartado ..> UnidadInventario : reserva por UnidadId
@@ -438,11 +566,15 @@ classDef evento fill:#EBDADD,stroke:#7A2E3F,color:#1E1E1E
 classDef servicio fill:#DDE6DD,stroke:#2E4A3A,color:#1E1E1E
 classDef politica fill:#ECE9DC,stroke:#5A5532,color:#1E1E1E
 classDef repo fill:#F8F1E4,stroke:#6B4423,stroke-dasharray:4 3,color:#1E1E1E
+classDef especificacion fill:#E6E3F0,stroke:#4B3F72,color:#1E1E1E
+classDef maquina fill:#E3EEF0,stroke:#2F5D66,color:#1E1E1E
 
 cssClass "RaizDeAgregado,Apartado,UnidadInventario,Venta,Devolucion,PoliticaComercial,Producto" raiz
 cssClass "LineaDeVenta" entidad
-cssClass "Dinero,NumeroDeSerie,Folio,Operador,PagoRecibido,VigenciaDeApartado,MotivoDeDevolucion,DictamenDeDevolucion,DecisionDeSupervisor,ResultadoDeRegla,ResultadoDeConversion,EstadoDeApartado,EstadoDeUnidad,EstadoDeDevolucion,MetodoDePago,Rol,CategoriaDeProducto,MotivoDeRechazo,ReglaDeNegocioViolada" vo
+cssClass "Dinero,NumeroDeSerie,Folio,Operador,PagoRecibido,VigenciaDeApartado,MotivoDeDevolucion,DictamenDeDevolucion,DecisionDeSupervisor,ResultadoDeRegla,ResultadoDeConversion,EstadoDeApartado,EstadoDeUnidad,EstadoDeDevolucion,CondicionDelProducto,FormaDeCompensacion,MetodoDePago,Rol,CategoriaDeProducto,MotivoDeRechazo,ReglaDeNegocioViolada" vo
 cssClass "EventoDeDominio,ApartadoCreado,ApartadoVencido,VentaCerrada,DevolucionDerivadaASupervisor,DevolucionAceptada,DevolucionRechazada" evento
 cssClass "ConversionDeApartado" servicio
-cssClass "CriterioDeDevolucion,ReglaDeDevolucion,ReglaDeComprobanteVigente,ReglaDePlazoPorCategoria" politica
+cssClass "CriterioDeDevolucion,ReglaDeDevolucion,ReglaDeComprobanteVigente,ReglaDePlazoPorCategoria,ReglaDeCondicionDelProducto" politica
 cssClass "IRepositorioDeApartados,IRepositorioDeUnidades,IRepositorioDeVentas,IRepositorioDeDevoluciones,IRepositorioDePoliticas,IRepositorioDeProductos" repo
+cssClass "IEspecificacion,EspecificacionY,EspecificacionO,EspecificacionNo,EspecificacionDeProductoApartable,EspecificacionDeUnidadDisponibleParaVenta,EspecificacionDeApartadoVigente,EspecificacionDeMetodoDePagoAutorizado,EspecificacionDeComprobanteValido,EspecificacionDeDevolucionDentroDePlazo,EspecificacionDeCondicionAceptable" especificacion
+cssClass "MaquinaDeEstados" maquina

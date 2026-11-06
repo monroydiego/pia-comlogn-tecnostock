@@ -7,6 +7,8 @@ flowchart LR
   classDef politica fill:#ECE9DC,stroke:#5A5532,color:#1E1E1E
   classDef externo fill:#F2F2F2,stroke:#9A9A9A,color:#555555
   classDef interesado fill:#E1E3EA,stroke:#3A3F58,color:#1E1E1E
+  classDef especificacion fill:#E6E3F0,stroke:#4B3F72,color:#1E1E1E
+  classDef maquina fill:#E3EEF0,stroke:#2F5D66,color:#1E1E1E
 
   subgraph A1["Aggregate: Apartado"]
     APT["Apartado<br/>«Aggregate Root»"]:::raiz
@@ -19,7 +21,7 @@ flowchart LR
   subgraph A2["Aggregate: UnidadInventario"]
     UNI["UnidadInventario<br/>«Aggregate Root»"]:::raiz
     SER["NumeroDeSerie<br/>«Value Object»"]:::vo
-    EUN["EstadoDeUnidad<br/>«Value Object»"]:::vo
+    EUN["EstadoDeUnidad<br/>Disponible, Apartada, Vendida,<br/>EnTransito, Defectuosa<br/>«Value Object»"]:::vo
     UNI --- SER
     UNI --- EUN
   end
@@ -35,9 +37,13 @@ flowchart LR
   subgraph A4["Aggregate: Devolucion"]
     DEV["Devolucion<br/>«Aggregate Root»"]:::raiz
     MOT["MotivoDeDevolucion<br/>«Value Object»"]:::vo
+    CON["CondicionDelProducto<br/>«Value Object»"]:::vo
+    FOR["FormaDeCompensacion<br/>«Value Object»"]:::vo
     DIC["DictamenDeDevolucion<br/>«Value Object»"]:::vo
     DSU["DecisionDeSupervisor<br/>«Value Object»"]:::vo
     DEV --- MOT
+    DEV --- CON
+    DEV --- FOR
     DEV --- DIC
     DEV --- DSU
   end
@@ -51,10 +57,12 @@ flowchart LR
   end
 
   subgraph A6["Catálogo (referencia)"]
-    PRO["Producto<br/>«Aggregate Root»"]:::raiz
+    PRO["Producto<br/>(requiereSerie, permiteApartado)<br/>«Aggregate Root»"]:::raiz
   end
 
-  CON["ConversionDeApartado<br/>«Domain Service»"]:::servicio
+  CON_["ConversionDeApartado<br/>«Domain Service»"]:::servicio
+  ESP["Specifications combinables Y, O, No<br/>(producto apartable, unidad disponible,<br/>apartado vigente, método de pago,<br/>comprobante, plazo, condición)<br/>«Specification»"]:::especificacion
+  MAQ["MaquinaDeEstados<br/>(Apartado, UnidadInventario, Devolucion)<br/>«State Machine»"]:::maquina
 
   SUC(("SucursalId")):::externo
   CLI(("ClienteId")):::externo
@@ -69,7 +77,7 @@ flowchart LR
 
   subgraph INT["Interesados en los eventos (capa de aplicación)"]
     H1["ManejadorDeComprobantes<br/>(US12)"]:::interesado
-    H2["ManejadorDeReingresoDeUnidades<br/>(BR-003)"]:::interesado
+    H2["ManejadorDeReingresoDeUnidades<br/>(BR-003, RN-INV-004)"]:::interesado
     H3["ManejadorDeAvisos<br/>(US13, US20)"]:::interesado
   end
 
@@ -87,9 +95,16 @@ flowchart LR
   POL -->|"métodos de pago autorizados"| VEN
   POL -->|"criterio vigente"| DEV
 
-  CON ==>|"coordina"| APT
-  CON ==>|"coordina"| UNI
-  CON ==>|"crea"| VEN
+  CON_ ==>|"coordina"| APT
+  CON_ ==>|"coordina"| UNI
+  CON_ ==>|"crea"| VEN
+
+  ESP -.->|"reglas de"| APT
+  ESP -.->|"reglas de"| UNI
+  ESP -.->|"reglas de"| REG
+  MAQ -.->|"transiciones de"| APT
+  MAQ -.->|"transiciones de"| UNI
+  MAQ -.->|"transiciones de"| DEV
 
   APT --> E1
   APT --> E2

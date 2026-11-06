@@ -15,8 +15,8 @@ sequenceDiagram
     participant MR as ManejadorDeReingresoDeUnidades
     participant UNI as UnidadInventario
 
-    Note over Cajero,UNI: PARTE 1 - CU-04 SolicitarDevolucion (flujo con regla y rechazo estandar)
-    Cajero->>SD: 1. SolicitarDevolucion(folioDeVenta, productoId, serieCapturada, motivo)
+    Note over Cajero,UNI: PARTE 1 - CU-04 SolicitarDevolucion (flujo con regla y rechazo estandar). El Vendedor capturo el motivo (US08) y el Cajero verifica comprobante y condicion del producto (US10)
+    Cajero->>SD: 1. SolicitarDevolucion(folioDeVenta, productoId, serieCapturada, motivo, condicionDelProducto, formaDeCompensacion)
     Note over SD: Obtiene el Operador (IContextoDeUsuario), la hora (IReloj) y el folio de devolucion (IGeneradorDeFolios)
     SD->>UoW: 2. Iniciar()
     SD->>RV: 3. ObtenerPorFolio(folioDeVenta)
@@ -31,13 +31,14 @@ sequenceDiagram
         RP-->>SD: Producto
         SD->>RPol: 5. ObtenerPoliticaVigente()
         RPol-->>SD: PoliticaComercial
-        SD->>CRI: 6. Evaluar(venta, linea, producto, ahora)
+        SD->>CRI: 6. Evaluar(venta, linea, producto, condicion, ahora)
+        Note right of CRI: Combina Specifications con Y: comprobante valido, plazo por categoria y condicion aceptable (RN-DEV-001, 002, 003)
         CRI-->>SD: DictamenDeDevolucion
-        SD->>DEV: 7. Solicitar(folio, venta, productoId, serie, motivo, dictamen, cajero, ahora)
+        SD->>DEV: 7. Solicitar(folio, venta, productoId, serie, motivo, condicion, forma, dictamen, cajero, ahora)
 
-        alt El dictamen cumple el criterio estandar (RN-DEV-001 y RN-DEV-002)
+        alt El dictamen cumple el criterio estandar
             DEV-->>SD: Devolucion en estado Aceptada (registra DevolucionAceptada)
-        else El dictamen incumple, por ejemplo fuera de plazo (RN-DEV-002)
+        else El dictamen incumple, por ejemplo fuera de plazo o empaque abierto
             DEV-->>SD: Devolucion en estado EnRevision (registra DevolucionDerivadaASupervisor)
         end
 
@@ -47,8 +48,8 @@ sequenceDiagram
 
         alt Devolucion aceptada
             PUB->>MR: DevolucionAceptada
-            MR->>UNI: RegistrarDevolucion(folioDeDevolucion)
-            Note right of UNI: Transaccion propia. Estado: Devuelta
+            MR->>UNI: RegistrarDevolucion(folioDeDevolucion, condicion)
+            Note right of UNI: Transaccion propia (RN-INV-004). Estado: Disponible si el empaque estaba cerrado, Defectuosa en otro caso
         else Devolucion en revision
             PUB->>MA: DevolucionDerivadaASupervisor
             MA-->>Supervisor: Aviso de devolucion pendiente (canal por validar)
@@ -71,7 +72,7 @@ sequenceDiagram
     else Decision registrada
         DSU-->>SD: DecisionDeSupervisor
         SD->>DEV: 15. Resolver(decision)
-        Note right of DEV: Solo desde EnRevision. Si no, TransicionDeEstadoInvalida
+        Note right of DEV: MaquinaDeEstados: solo desde EnRevision. Si no, TransicionDeEstadoInvalida
 
         alt El Supervisor autoriza
             DEV-->>SD: estado Aceptada (registra DevolucionAceptada)
@@ -85,7 +86,7 @@ sequenceDiagram
 
         opt Si la devolucion quedo Aceptada
             PUB->>MR: DevolucionAceptada
-            MR->>UNI: RegistrarDevolucion(folioDeDevolucion)
+            MR->>UNI: RegistrarDevolucion(folioDeDevolucion, condicion)
         end
         SD-->>Supervisor: 18. Resultado con el estado final y la autorizacion registrada
     end
