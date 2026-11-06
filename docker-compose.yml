@@ -1,0 +1,54 @@
+# SQL Server + API + pruebas. Uso:
+#   cp .env.example .env     (y definir MSSQL_SA_PASSWORD)
+#   docker compose up --build
+# La API queda en http://localhost:8080 (Swagger en /swagger). El servicio "tests" corre las pruebas con cobertura y termina.
+name: tecnostock
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: ${ACCEPT_EULA:-Y}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Defina MSSQL_SA_PASSWORD en el archivo .env}
+    ports:
+      - "${DB_HOST_PORT:-1433}:1433"
+    volumes:
+      - datos-sql:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  app:
+    build:
+      context: .
+      target: final
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      DB_HOST: db
+      DB_PORT: "1433"
+      DB_NAME: ${DB_NAME:-TecnoStock}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+  tests:
+    build:
+      context: .
+      target: pruebas
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: "1433"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    restart: "no"
+
+volumes:
+  datos-sql:

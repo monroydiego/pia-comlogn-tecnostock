@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/TestResults/
+coverage/
+.git/
+.github/
+.vs/
+.env
+docs/
+*.md
