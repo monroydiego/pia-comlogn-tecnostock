@@ -1,0 +1,9 @@
+bin/
+obj/
+.vs/
+*.user
+.env
+TestResults/
+coverage/
+/CLAUDE.md
+*CONTEXTO.md
