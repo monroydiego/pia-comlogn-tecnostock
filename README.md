@@ -121,7 +121,7 @@ Dependencias: `api → application → domain`; `infrastructure → application 
 - **Máquina de estados** (ADR-008): `MaquinaDeEstados<T>` con las tablas de transiciones de Apartado, UnidadInventario y Devolucion.
 - **Tres tipos de rechazo** (ADR-006): violación de regla (rollback), derivación a Supervisor (`EnRevision`) y rechazo con efecto (el vencimiento de un apartado se guarda aunque la conversión se rechace).
 - **Una Unidad de Trabajo por caso de uso**; los eventos se publican después de confirmar y atienden comprobantes, reingreso de unidades y avisos (ADR-003).
-- **EF Core / SQL Server** (ADR-009): índice único de serie (RN-INV-002), un solo apartado vigente por unidad (RN-APT-003) y concurrencia optimista por versión.
+- **EF Core / SQL Server** (ADR-009, ADR-010): claves de negocio de texto, 18 claves foráneas, esquema en primera forma normal, índice único de serie (RN-INV-002), un solo apartado vigente por unidad (RN-APT-003) y concurrencia optimista por versión.
 
 ## Pruebas y cobertura
 
@@ -152,9 +152,9 @@ El despliegue (CD) aún no está definido: SQL Server no existe administrado en 
 | Glosario (lenguaje ubicuo) | [`docs/analisis/glosario.md`](docs/analisis/glosario.md) |
 | BPMN | [`docs/analisis/bpmn/BPMN.md`](docs/analisis/bpmn/BPMN.md) |
 | Diagramas (dominio, aplicación, secuencias) | [`docs/architecture/diagramas/`](docs/architecture/diagramas) |
-| ADR-001 a ADR-009 | [`docs/architecture/adr/`](docs/architecture/adr) |
+| ADR-001 a ADR-010 | [`docs/architecture/adr/`](docs/architecture/adr) |
 | Matriz de trazabilidad | [`docs/architecture/matriz_trazabilidad.md`](docs/architecture/matriz_trazabilidad.md) |
-| Registro de cambios (C-01 a C-34) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
+| Registro de cambios (C-01 a C-35) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
 | OpenAPI | [`docs/api/openapi.json`](docs/api/openapi.json) |
 
 ## Limitaciones conocidas
@@ -162,5 +162,5 @@ El despliegue (CD) aún no está definido: SQL Server no existe administrado en 
 - Los valores de política (anticipo 30%, vigencia 7 días, plazos de devolución, métodos de pago) y las reglas RN-APT-004, RN-DEV-003, RN-DEV-004 y RN-INV-004 son **[Supuesto]** pendientes de validar con el stakeholder.
 - Solo se exige rol para las acciones del Supervisor; no se valida que el cliente ni la sucursal existan en un catálogo (C-26).
 - Si un manejador de eventos falla, el error se registra en el log y no se reintenta (C-32).
-- La base se crea con `EnsureCreated`, sin migraciones (C-27).
+- La base se crea con `EnsureCreated`, sin migraciones (C-27): si ya tenía una base creada con una versión anterior del esquema, bórrela (`DROP DATABASE`) y la API la vuelve a crear y sembrar.
 - Los folios son únicos pero no consecutivos (C-29).

@@ -131,6 +131,9 @@ Se conservaron los 20 términos de la Unidad 2 con sus identificadores (G-01 a G
 | G-87 | Value Converter | Técnico | Regla de EF Core que guarda un Value Object del dominio en una columna simple y lo reconstruye al leer; vive solo en infraestructura. | Nuevo |
 | G-88 | Publicador de Eventos | Técnico | Componente de infraestructura que entrega cada Domain Event a sus manejadores dentro del proceso, después de confirmar la transacción. | Nuevo |
 | G-89 | Problem Details | Técnico | Formato estándar (RFC 9457) de las respuestas de error de la API, con el motivo de rechazo y la alternativa sugerida. | Nuevo |
+| G-90 | Clave de Negocio | Técnico | Identificador con significado para el negocio (SKU `TEC-P001`, folio `APT-000001`, sucursal `SUC-01`); es estable y único, y puede ser la clave primaria de la tabla (ADR-010). | Nuevo |
+| G-91 | Clave Foránea | Técnico | Restricción de la base de datos que obliga a que una referencia apunte a un registro existente; garantiza la integridad referencial entre aggregates sin propiedades de navegación en el dominio. | Nuevo |
+| G-92 | Primera Forma Normal | Técnico | Regla de diseño de bases de datos: cada columna guarda un solo valor (atómico), sin listas ni JSON; los valores repetidos van en una tabla hija con una fila por valor. | Nuevo |
 
 ## 4. Equivalencias con los datos de ejemplo del curso
 
