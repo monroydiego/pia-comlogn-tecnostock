@@ -7,10 +7,10 @@
 //       NODE_PATH="$(npm root -g)" node scripts/md-a-docx.js entrada.md salida.docx
 //
 // Admite: títulos (#, ##, ###), tablas, listas con viñetas y numeradas, bloques de código, **negrita**, *cursiva*,
-// `código` y <br>. Las imágenes se omiten (se reemplazan por su texto alternativo).
+// `código` y <br>. Las imágenes PNG sueltas (![leyenda](ruta)) se incrustan escaladas a la página con su leyenda.
 const fs = require("fs");
 const {
-  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, Footer, AlignmentType, PageOrientation,
+  Document, Packer, Paragraph, TextRun, ImageRun, Table, TableRow, TableCell, Footer, AlignmentType, PageOrientation,
   LevelFormat, BorderStyle, WidthType, ShadingType, PageNumber, HeadingLevel, TabStopType,
 } = require("docx");
 
@@ -19,6 +19,8 @@ if (!entrada || !salida) { console.error("Uso: node md-a-docx.js entrada.md sali
 
 const FUENTE = "Times New Roman";
 const ANCHO = { vertical: 9360, horizontal: 12960 }; // ancho útil en DXA con márgenes de 1 pulgada
+const path = require("path");
+const carpeta = path.dirname(path.resolve(entrada));
 const lineas = fs.readFileSync(entrada, "utf8").replace(/\r/g, "").split("\n");
 
 // ---------- Inline ----------
@@ -103,6 +105,13 @@ while (i < lineas.length) {
     while (i < lineas.length && !lineas[i].startsWith("```")) codigo.push(lineas[i++]);
     i++; bloques.push({ tipo: "codigo", lineas: codigo }); continue;
   }
+  const im = l.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+  if (im) {
+    const ruta = path.resolve(carpeta, im[2]);
+    const cab = fs.readFileSync(ruta).subarray(0, 32);
+    bloques.push({ tipo: "imagen", leyenda: im[1], ruta, ancho: cab.readUInt32BE(16), alto: cab.readUInt32BE(20) });
+    i++; continue;
+  }
   const h = l.match(/^(#{1,3}) (.+)$/);
   if (h) { bloques.push({ tipo: "titulo", nivel: h[1].length, texto: h[2] }); i++; continue; }
   if (l.trim().startsWith("|")) {
@@ -121,24 +130,24 @@ while (i < lineas.length) {
     bloques.push({ tipo: "numerada", items }); continue;
   }
   const texto = [l.trim()]; i++;
-  while (i < lineas.length && lineas[i].trim() !== "" && !/^(#{1,3} |\||```|\s*[-*] |\s*\d+\. )/.test(lineas[i])) texto.push(lineas[i++].trim());
+  while (i < lineas.length && lineas[i].trim() !== "" && !/^(#{1,3} |\||```|!\[|\s*[-*] |\s*\d+\. )/.test(lineas[i])) texto.push(lineas[i++].trim());
   bloques.push({ tipo: "parrafo", texto: texto.join(" ") });
 }
 
 // ---------- Orientación: una tabla ancha lleva consigo su título y sus párrafos previos ----------
 // Horizontal si tiene 5 o más columnas o palabras muy largas (por ejemplo nombres de pruebas), que no se pueden partir.
 const palabraLarga = b => b.filas.some(f => f.some(c => c.replace(/<br>/g, " ").replace(/[`*]/g, "").split(/\s+/).some(w => w.length > 38)));
-const ancha = b => b.tipo === "tabla" && (b.filas[0].length >= 5 || palabraLarga(b));
+const ancha = b => (b.tipo === "tabla" && (b.filas[0].length >= 5 || palabraLarga(b))) || (b.tipo === "imagen" && b.ancho / b.alto >= 1.6);
 bloques.forEach(b => (b.horizontal = false));
 bloques.forEach((b, idx) => {
   if (!ancha(b)) return;
   b.horizontal = true;
-  for (let j = idx - 1; j >= 0 && bloques[j].tipo !== "tabla"; j--) {
+  for (let j = idx - 1; j >= 0 && bloques[j].tipo !== "tabla" && bloques[j].tipo !== "imagen"; j--) {
     bloques[j].horizontal = true;
     if (bloques[j].tipo === "titulo" && bloques[j].nivel <= 2) break;
   }
   // Los párrafos y listas que siguen a la tabla, hasta el próximo título, se quedan en la misma sección horizontal.
-  for (let j = idx + 1; j < bloques.length && bloques[j].tipo !== "titulo" && bloques[j].tipo !== "tabla"; j++) bloques[j].horizontal = true;
+  for (let j = idx + 1; j < bloques.length && bloques[j].tipo !== "titulo" && bloques[j].tipo !== "tabla" && bloques[j].tipo !== "imagen"; j++) bloques[j].horizontal = true;
 });
 
 // ---------- Construcción ----------
@@ -169,8 +178,20 @@ function convertir(b, ancho) {
         style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] });
       return b.items.map(t => new Paragraph({ numbering: { reference: referencia, level: 0 }, spacing: { after: 60 }, children: corridas(t) }));
     }
-    case "codigo": return b.lineas.map(t => new Paragraph({ spacing: { after: 0 }, indent: { left: 360 },
+    case "codigo": return b.lineas.map((t, k) => new Paragraph({ spacing: { after: k === b.lineas.length - 1 ? 160 : 0 }, indent: { left: 360 },
       children: [new TextRun({ text: t === "" ? " " : t, font: "Courier New", size: 17 })] }));
+    case "imagen": {
+      const maxAncho = ancho / 15 - 6;                      // píxeles a 96 ppp
+      const maxAlto = (b.horizontal ? 8600 : 12300) / 15 - 70; // deja lugar a la leyenda
+      const factor = Math.min(maxAncho / b.ancho, maxAlto / b.alto, 1);
+      const w = Math.round(b.ancho * factor), h = Math.round(b.alto * factor);
+      return [
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 60 }, keepNext: true, children: [new ImageRun({
+          type: "png", data: fs.readFileSync(b.ruta), transformation: { width: w, height: h },
+          altText: { title: b.leyenda, description: b.leyenda, name: path.basename(b.ruta) } })] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: b.leyenda, font: FUENTE, size: 20, italics: true })] }),
+      ];
+    }
     case "tabla": return [tabla(b.filas, ancho), new Paragraph({ spacing: { after: 160 }, children: [] })];
   }
   return [];
