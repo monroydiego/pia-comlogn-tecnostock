@@ -34,6 +34,7 @@ public static class Sembrador
         await CrearBaseDeDatosAsync(ctx, log, ct);
         if (await ctx.Productos.AnyAsync(ct)) return;
 
+        ctx.Sucursales.AddRange(Sucursales.Select((id, i) => new SucursalSemilla { Id = new SucursalId(id), Nombre = $"Sucursal {i + 1:00}" }));
         ctx.Politicas.Add(PoliticaComercial.PorDefecto());
         var productos = LeerCatalogo(Path.Combine(carpetaDeDatos, "catalogo.csv"));
         ctx.Productos.AddRange(productos.Select(p => p.Producto));
@@ -91,6 +92,6 @@ public static class Sembrador
         File.ReadAllLines(ruta).Skip(1).Where(l => !string.IsNullOrWhiteSpace(l)).Select(l =>
         {
             var c = l.Split(',');
-            return new ClienteSemilla { Id = c[0], Nombre = c[1], EsPreferente = c[2].Trim() == "1", Activo = c[3].Trim() == "1", Ciudad = c[4].Trim() };
+            return new ClienteSemilla { Id = new ClienteId(c[0]), Nombre = c[1], EsPreferente = c[2].Trim() == "1", Activo = c[3].Trim() == "1", Ciudad = c[4].Trim() };
         });
 }

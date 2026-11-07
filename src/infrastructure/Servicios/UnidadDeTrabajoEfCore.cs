@@ -35,7 +35,7 @@ public sealed class UnidadDeTrabajoEfCore(ContextoDeDatos ctx, IPublicadorDeEven
             throw new ReglaDeNegocioViolada(MotivoDeRechazo.ConflictoDeConcurrencia,
                 "Otra operación modificó el mismo registro. Vuelva a intentarlo.");
         }
-        catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 } sql)
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 or 547 } sql)
         {
             Descartar();
             throw TraducirViolacionDeUnicidad(sql);
@@ -61,6 +61,11 @@ public sealed class UnidadDeTrabajoEfCore(ContextoDeDatos ctx, IPublicadorDeEven
 
     private static ReglaDeNegocioViolada TraducirViolacionDeUnicidad(SqlException sql) => sql.Message switch
     {
+        // Clave foránea (547): se hace referencia a algo que no existe.
+        var m when sql.Number == 547 && m.Contains("dbo.Clientes") => new(MotivoDeRechazo.NoEncontrado, "El cliente indicado no existe."),
+        var m when sql.Number == 547 && m.Contains("dbo.Sucursales") => new(MotivoDeRechazo.NoEncontrado, "La sucursal indicada no existe."),
+        var m when sql.Number == 547 && m.Contains("dbo.Productos") => new(MotivoDeRechazo.NoEncontrado, "El producto indicado no existe."),
+        _ when sql.Number == 547 => new(MotivoDeRechazo.NoEncontrado, "Una referencia del registro no existe."),
         var m when m.Contains("IX_Unidades_Serie") => new(MotivoDeRechazo.SerieDuplicada, "La serie ya existe en el inventario."),
         var m when m.Contains("IX_Apartados_UnidadVigente") => new(MotivoDeRechazo.UnidadApartada, "La unidad ya tiene un apartado vigente."),
         _ => new(MotivoDeRechazo.ConflictoDeConcurrencia, "Otra operación modificó el mismo registro. Vuelva a intentarlo.")

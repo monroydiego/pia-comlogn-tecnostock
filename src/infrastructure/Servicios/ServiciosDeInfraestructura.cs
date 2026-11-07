@@ -37,7 +37,8 @@ public sealed class EmisorDeComprobantesBasico(ContextoDeDatos ctx) : IEmisorDeC
         ctx.Comprobantes.Add(new ComprobanteEmitido
         {
             FolioDeComprobante = c.FolioDeComprobante.Valor, Tipo = c.Tipo.ToString(), FolioDeOperacion = c.FolioDeOperacion.Valor,
-            Fecha = c.Fecha, Usuario = c.Usuario, Detalle = string.Join(Environment.NewLine, c.Detalle)
+            Fecha = c.Fecha, Usuario = c.Usuario,
+            Lineas = c.Detalle.Select((texto, i) => new ComprobanteLinea { FolioDeComprobante = c.FolioDeComprobante.Valor, Orden = i + 1, Texto = texto }).ToList()
         });
         ctx.SaveChanges();
     }
