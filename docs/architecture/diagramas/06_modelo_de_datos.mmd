@@ -1,0 +1,81 @@
+erDiagram
+  Sucursales ||--o{ UnidadesDeInventario : "ubica (SucursalActual)"
+  Productos ||--o{ UnidadesDeInventario : "es de (ProductoId)"
+  Apartados |o--o{ UnidadesDeInventario : "reserva (FolioDeApartadoVigente)"
+  UnidadesDeInventario ||--o{ Apartados : "se aparta (UnidadId)"
+  Clientes ||--o{ Apartados : "aparta (ClienteId)"
+  Sucursales ||--o{ Apartados : "en (SucursalId)"
+  Sucursales ||--o{ Ventas : "en (SucursalId)"
+  Apartados |o--o{ Ventas : "origen (FolioDeApartadoOrigen)"
+  Ventas ||--|{ LineasDeVenta : "contiene (FolioDeVenta)"
+  Ventas ||--|{ PagosDeVenta : "se paga con (FolioDeVenta)"
+  Productos ||--o{ LineasDeVenta : "ProductoId"
+  UnidadesDeInventario ||--o{ LineasDeVenta : "UnidadId"
+  Ventas ||--o{ Devoluciones : "se devuelve (FolioDeVenta)"
+  UnidadesDeInventario ||--o{ Devoluciones : "UnidadDevuelta"
+  Devoluciones ||--|{ DevolucionResultadosDeRegla : "dictamen (FolioDeDevolucion)"
+  PoliticasComerciales ||--|{ PoliticaMetodosDePago : "autoriza (PoliticaId)"
+  PoliticasComerciales ||--|{ PoliticaPlazosDeDevolucion : "plazo por categoria (PoliticaId)"
+  Comprobantes ||--|{ ComprobanteLineas : "renglones (FolioDeComprobante)"
+
+  Sucursales { varchar Id PK }
+  Clientes { varchar Id PK }
+  Productos { varchar Id PK
+    varchar Categoria
+    bit RequiereSerie
+    bit PermiteApartado
+    decimal PrecioDeLista }
+  UnidadesDeInventario { guid Id PK
+    varchar ProductoId FK
+    varchar SucursalActual FK
+    varchar Serie UK
+    varchar Estado
+    varchar FolioDeApartadoVigente FK
+    int Version }
+  Apartados { varchar Folio PK
+    varchar ClienteId FK
+    varchar SucursalId FK
+    guid UnidadId FK
+    decimal PrecioAcordado
+    varchar Estado
+    datetime VigenciaHasta
+    int Version }
+  Ventas { varchar Folio PK
+    varchar SucursalId FK
+    varchar FolioDeApartadoOrigen FK
+    datetime FechaDeCierre
+    int Version }
+  LineasDeVenta { guid Id PK
+    varchar FolioDeVenta FK
+    varchar ProductoId FK
+    guid UnidadId FK
+    varchar Serie
+    decimal PrecioUnitario }
+  PagosDeVenta { int Id PK
+    varchar FolioDeVenta FK
+    varchar Metodo
+    decimal Monto }
+  Devoluciones { varchar Folio PK
+    varchar FolioDeVenta FK
+    guid UnidadDevuelta FK
+    varchar Condicion
+    varchar Estado
+    int Version }
+  DevolucionResultadosDeRegla { int Id PK
+    varchar FolioDeDevolucion FK
+    bit Cumple
+    varchar Razon }
+  PoliticasComerciales { int Id PK
+    decimal PorcentajeDeAnticipoMinimo
+    int PlazoMaximoDeApartadoEnDias }
+  PoliticaMetodosDePago { int PoliticaId PK
+    varchar Metodo PK }
+  PoliticaPlazosDeDevolucion { int PoliticaId PK
+    varchar Categoria PK
+    int Dias }
+  Comprobantes { varchar FolioDeComprobante PK
+    varchar Tipo
+    varchar FolioDeOperacion }
+  ComprobanteLineas { int Id PK
+    varchar FolioDeComprobante FK
+    varchar Texto }
