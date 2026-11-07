@@ -134,7 +134,7 @@ dotnet test                                  # 169 unitarias + 49 de integració
 ./scripts/pruebas-con-cobertura.sh           # une la cobertura y falla si es menor a 80%
 ```
 
-Cada escenario Gherkin tiene su prueba y la matriz de trazabilidad se verifica automáticamente (`TrazabilidadPruebas`). Última ejecución completa: **218 pruebas en verde** (169 unitarias y 49 de integración); **98.7% de cobertura de líneas** y 91.8% de ramas (el umbral exigido es 80%), medidas con `scripts/pruebas-con-cobertura.sh`. Cada prueba lleva en su nombre la historia que cubre (por ejemplo `US07_CU03_Saldo_insuficiente...`). Cada fixture de integración crea su propia base de datos y la elimina al terminar, así que no toca los datos de desarrollo.
+Cada escenario Gherkin tiene su prueba y la matriz de trazabilidad se verifica automáticamente (`TrazabilidadPruebas`). Última ejecución completa: **218 pruebas en verde** (169 unitarias y 49 de integración); **98.7% de cobertura de líneas** y 91.8% de ramas (el umbral exigido es 80%), medidas con `scripts/pruebas-con-cobertura.sh` (98.2% dentro de Docker Compose). Cada prueba lleva en su nombre la historia que cubre (por ejemplo `US07_CU03_Saldo_insuficiente...`). Cada fixture de integración crea su propia base de datos y la elimina al terminar, así que no toca los datos de desarrollo.
 
 ## CI/CD
 
@@ -155,10 +155,19 @@ El despliegue (CD) aún no está definido: SQL Server no existe administrado en 
 | BPMN | [`docs/analisis/bpmn/BPMN.md`](docs/analisis/bpmn/BPMN.md) |
 | Diagramas (dominio, aplicación, secuencias) | [`docs/architecture/diagramas/`](docs/architecture/diagramas) |
 | ADR-001 a ADR-010 | [`docs/architecture/adr/`](docs/architecture/adr) |
-| Matriz de trazabilidad | [`docs/architecture/matriz_trazabilidad.md`](docs/architecture/matriz_trazabilidad.md) |
-| Registro de cambios (C-01 a C-37) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
+| Matriz de trazabilidad (también en `.docx` y `.pdf`) | [`docs/architecture/matriz_trazabilidad.md`](docs/architecture/matriz_trazabilidad.md) |
+| Registro de cambios (C-01 a C-38) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
 | OpenAPI | [`docs/api/openapi.json`](docs/api/openapi.json) |
-| Guía de uso de la API (campos, folios, datos de prueba y recorridos) | [`docs/api/guia_de_uso.md`](docs/api/guia_de_uso.md) |
+| Guía de uso de la API: campos, folios, datos de prueba y recorridos (también en `.docx` y `.pdf`) | [`docs/api/guia_de_uso.md`](docs/api/guia_de_uso.md) |
+
+### Regenerar los documentos Word y PDF
+
+```bash
+npm install -g docx
+NODE_PATH="$(npm root -g)" node scripts/md-a-docx.js docs/cambios/registro_de_cambios.md docs/cambios/registro_de_cambios.docx
+```
+
+El Markdown es la fuente; el PDF se exporta con LibreOffice (`soffice --headless --convert-to pdf`).
 
 ## Limitaciones conocidas
 
