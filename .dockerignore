@@ -8,3 +8,6 @@ coverage/
 .env
 docs/
 *.md
+# La prueba de trazabilidad necesita estos dos documentos dentro del contenedor de pruebas.
+!docs/analisis/historias_de_usuario.md
+!docs/architecture/matriz_trazabilidad.md

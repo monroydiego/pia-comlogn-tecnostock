@@ -130,11 +130,11 @@ Dependencias: `api → application → domain`; `infrastructure → application 
 ```bash
 docker compose up -d db                      # SQL Server para las pruebas de integración
 set -a; source .env; set +a                  # DB_HOST, DB_PORT y MSSQL_SA_PASSWORD
-dotnet test                                  # 166 unitarias + 45 de integración
+dotnet test                                  # 169 unitarias + 49 de integración
 ./scripts/pruebas-con-cobertura.sh           # une la cobertura y falla si es menor a 80%
 ```
 
-Con la última ejecución completa (Docker Compose): **211 pruebas en verde y 98.5% de cobertura de líneas** (89.8% de ramas). Cada prueba lleva en su nombre la historia que cubre (por ejemplo `US07_CU03_Saldo_insuficiente...`). Cada fixture de integración crea su propia base de datos y la elimina al terminar, así que no toca los datos de desarrollo.
+Cada escenario Gherkin tiene su prueba y la matriz de trazabilidad se verifica automáticamente (`TrazabilidadPruebas`). Última ejecución completa: **218 pruebas en verde** (169 unitarias y 49 de integración); la cobertura se mide con `scripts/pruebas-con-cobertura.sh` (ver su resultado en el reporte). Cada prueba lleva en su nombre la historia que cubre (por ejemplo `US07_CU03_Saldo_insuficiente...`). Cada fixture de integración crea su propia base de datos y la elimina al terminar, así que no toca los datos de desarrollo.
 
 ## CI/CD
 
@@ -156,7 +156,7 @@ El despliegue (CD) aún no está definido: SQL Server no existe administrado en 
 | Diagramas (dominio, aplicación, secuencias) | [`docs/architecture/diagramas/`](docs/architecture/diagramas) |
 | ADR-001 a ADR-010 | [`docs/architecture/adr/`](docs/architecture/adr) |
 | Matriz de trazabilidad | [`docs/architecture/matriz_trazabilidad.md`](docs/architecture/matriz_trazabilidad.md) |
-| Registro de cambios (C-01 a C-36) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
+| Registro de cambios (C-01 a C-37) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
 | OpenAPI | [`docs/api/openapi.json`](docs/api/openapi.json) |
 | Guía de uso de la API (campos, folios, datos de prueba y recorridos) | [`docs/api/guia_de_uso.md`](docs/api/guia_de_uso.md) |
 
