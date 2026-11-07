@@ -139,8 +139,8 @@ public sealed class ApartadosYVentasApiPruebas : IClassFixture<FabricaDeApi>
 
         using var alcance = _fabrica.NuevoAlcance();
         var ctx = alcance.ServiceProvider.GetRequiredService<ContextoDeDatos>();
-        var comprobante = await ctx.Comprobantes.SingleAsync(c => c.FolioDeOperacion == folioVenta);
-        Assert.Contains(serie, comprobante.Detalle);
+        var comprobante = await ctx.Comprobantes.Include(c => c.Lineas).SingleAsync(c => c.FolioDeOperacion == folioVenta);
+        Assert.Contains(comprobante.Lineas, l => l.Texto.Contains(serie));
         Assert.Equal("usuario1", comprobante.Usuario);
         Assert.StartsWith("CMP-", comprobante.FolioDeComprobante);
     }

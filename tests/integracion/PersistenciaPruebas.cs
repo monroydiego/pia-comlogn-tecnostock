@@ -223,6 +223,76 @@ public sealed class PersistenciaPruebas : IClassFixture<FabricaDeApi>
     }
 
     [Fact]
+    public async Task ADR_010_El_esquema_esta_normalizado_con_claves_foraneas_y_sin_columnas_con_varios_valores()
+    {
+        using var c = Nuevo();
+        var bd = c.Obtener<ContextoDeDatos>().Database;
+
+        var foraneas = (await bd.SqlQuery<string>($@"SELECT OBJECT_NAME(parent_object_id) + '.' + COL_NAME(parent_object_id, parent_column_id)
+            + ' -> ' + OBJECT_NAME(referenced_object_id) AS [Value] FROM sys.foreign_key_columns").ToListAsync()).ToHashSet();
+        foreach (var esperada in new[]
+                 {
+                     "UnidadesDeInventario.ProductoId -> Productos", "UnidadesDeInventario.SucursalActual -> Sucursales",
+                     "UnidadesDeInventario.FolioDeApartadoVigente -> Apartados", "Apartados.UnidadId -> UnidadesDeInventario",
+                     "Apartados.ClienteId -> Clientes", "Apartados.SucursalId -> Sucursales", "Ventas.SucursalId -> Sucursales",
+                     "Ventas.FolioDeApartadoOrigen -> Apartados", "LineasDeVenta.ProductoId -> Productos",
+                     "LineasDeVenta.UnidadId -> UnidadesDeInventario", "LineasDeVenta.FolioDeVenta -> Ventas",
+                     "PagosDeVenta.FolioDeVenta -> Ventas", "Devoluciones.FolioDeVenta -> Ventas",
+                     "Devoluciones.UnidadDevuelta -> UnidadesDeInventario", "DevolucionResultadosDeRegla.FolioDeDevolucion -> Devoluciones",
+                     "PoliticaMetodosDePago.PoliticaId -> PoliticasComerciales", "PoliticaPlazosDeDevolucion.PoliticaId -> PoliticasComerciales",
+                     "ComprobanteLineas.FolioDeComprobante -> Comprobantes"
+                 })
+            Assert.Contains(esperada, foraneas);
+
+        // Ninguna columna guarda JSON ni listas: no hay nvarchar(max) ni varchar(max).
+        var columnasMax = await bd.SqlQuery<int>($@"SELECT COUNT(*) AS [Value] FROM sys.columns c
+            JOIN sys.tables t ON t.object_id = c.object_id WHERE c.max_length = -1").SingleAsync();
+        Assert.Equal(0, columnasMax);
+
+        // La política se guarda como filas, una por método y una por categoría.
+        Assert.Equal(3, await bd.SqlQuery<int>($"SELECT COUNT(*) AS [Value] FROM PoliticaMetodosDePago").SingleAsync());
+        Assert.Equal(4, await bd.SqlQuery<int>($"SELECT COUNT(*) AS [Value] FROM PoliticaPlazosDeDevolucion").SingleAsync());
+        Assert.Equal(5, await bd.SqlQuery<int>($"SELECT COUNT(*) AS [Value] FROM Sucursales").SingleAsync());
+    }
+
+    [Fact]
+    public async Task ADR_010_El_dictamen_y_la_decision_del_Supervisor_se_guardan_en_filas_y_columnas()
+    {
+        var http = _fabrica.CreateClient();
+        var venta = await http.Post("/ventas", VentaConSerie("TEC-P001", Serie("TEC-P001", 1), 336m, "SUC-01"));
+        Assert.Equal(HttpStatusCode.Created, venta.Codigo);
+        var folio = (await http.Post("/devoluciones", new
+        {
+            folioDeVenta = venta.Texto("folio"), productoId = "TEC-P001", serieCapturada = Serie("TEC-P001", 1),
+            motivo = new { causal = "Falla" }, condicionDelProducto = "EmpaqueAbierto", formaDeCompensacion = "Reembolso"
+        })).Texto("folio");
+        await http.Post($"/devoluciones/{folio}/resolucion", new { autoriza = true, motivo = "excepción" }, rol: "Supervisor");
+
+        using var c = Nuevo();
+        var bd = c.Obtener<ContextoDeDatos>().Database;
+        Assert.Equal(3, await bd.SqlQuery<int>($"SELECT COUNT(*) AS [Value] FROM DevolucionResultadosDeRegla WHERE FolioDeDevolucion = {folio}").SingleAsync());
+        Assert.Equal(1, await bd.SqlQuery<int>($"SELECT COUNT(*) AS [Value] FROM DevolucionResultadosDeRegla WHERE FolioDeDevolucion = {folio} AND Cumple = 0").SingleAsync());
+        Assert.Equal("Supervisor", await bd.SqlQuery<string>($"SELECT DecisionSupervisorRol AS [Value] FROM Devoluciones WHERE Folio = {folio}").SingleAsync());
+        Assert.Equal("excepción", await bd.SqlQuery<string>($"SELECT DecisionMotivo AS [Value] FROM Devoluciones WHERE Folio = {folio}").SingleAsync());
+    }
+
+    [Fact]
+    public async Task Las_referencias_inexistentes_se_rechazan_en_la_base_y_el_rollback_deja_la_unidad_disponible()
+    {
+        var http = _fabrica.CreateClient();
+        var antes = await http.Disponibles("TEC-P013");
+        var r = await http.Post("/apartados", new
+        {
+            productoId = "TEC-P013", sucursalId = "SUC-01", clienteId = "TEC-C999",
+            anticipo = Pago("Efectivo", 400m)
+        });
+        Assert.Equal(HttpStatusCode.NotFound, r.Codigo);
+        Assert.Equal("NoEncontrado", r.Texto("motivo"));
+        Assert.Contains("cliente", r.Texto("detail"));
+        Assert.Equal(antes, await http.Disponibles("TEC-P013"));
+    }
+
+    [Fact]
     public void Los_folios_son_unicos_y_crecientes_por_tipo_de_operacion()
     {
         using var c = Nuevo();
@@ -251,7 +321,7 @@ public sealed class PoliticaConfigurableApiPruebas : IClassFixture<FabricaDeApi>
         var http = _fabrica.CreateClient();
         using (var alcance = _fabrica.NuevoAlcance())
             await alcance.ServiceProvider.GetRequiredService<ContextoDeDatos>().Database
-                .ExecuteSqlRawAsync("UPDATE PoliticasComerciales SET MetodosAutorizados = 'Efectivo'");
+                .ExecuteSqlRawAsync("DELETE FROM PoliticaMetodosDePago WHERE Metodo <> 'Efectivo'");
 
         var apartado = await http.Post("/apartados", Apartar("TEC-P001", 120m, "Tarjeta"));
         Assert.Equal((HttpStatusCode)422, apartado.Codigo);

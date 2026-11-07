@@ -55,6 +55,14 @@ public sealed class InventarioApiPruebas : IClassFixture<FabricaDeApi>
     }
 
     [Fact]
+    public async Task US17_Sucursal_inexistente_responde_404_por_la_clave_foranea()
+    {
+        var r = await _http.Post("/unidades", new { productoId = "TEC-P001", sucursalId = "SUC-99", serie = "sn-sin-sucursal" }, rol: "Almacen");
+        Assert.Equal(HttpStatusCode.NotFound, r.Codigo);
+        Assert.Contains("sucursal", r.Texto("detail"));
+    }
+
+    [Fact]
     public async Task US17_Serie_duplicada_responde_422()
     {
         var existente = Serie("TEC-P002", 1);
