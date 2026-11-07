@@ -54,9 +54,9 @@ public static class Sembrador
                 await ctx.Database.EnsureCreatedAsync(ct);
                 return;
             }
-            catch (Microsoft.Data.SqlClient.SqlException ex) when (intento < 30)
+            catch (Microsoft.Data.SqlClient.SqlException ex) when (intento < 60)
             {
-                log.LogWarning("SQL Server aún no responde (intento {Intento} de 30): {Mensaje}", intento, ex.Message);
+                log.LogWarning("SQL Server aún no responde (intento {Intento} de 60): {Mensaje}", intento, ex.Message);
                 await Task.Delay(TimeSpan.FromSeconds(2), ct);
             }
         }

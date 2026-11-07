@@ -5,7 +5,7 @@ Implementado con **.NET 10, C#, SQL Server (EF Core)**, DDD, Specification y má
 
 - **Equipo:** Eduardo Alejandro Acevedo Liuskos (2142139), Emma Patricia Brown Sánchez (2135479), Diego Monroy García (2135198).
 - **Profesor:** Miguel Ángel Gómez Marroquín.
-- **Repositorio:** _(URL por completar al publicar)_ · **Sistema desplegado:** _(pendiente: decisión de despliegue)_
+- **Repositorio:** _(URL por completar al publicar)_ · **Sistema desplegado:** _(URL por completar tras el despliegue en Render)_
 
 ## Qué hace
 
@@ -143,7 +143,7 @@ Cada escenario Gherkin tiene su prueba y la matriz de trazabilidad se verifica a
 1. **pruebas:** levanta SQL Server con una contraseña efímera, compila, ejecuta las pruebas con cobertura y falla si queda por debajo de 80%.
 2. **compose:** ejecuta `docker compose up --build --exit-code-from tests`.
 
-El despliegue (CD) aún no está definido: SQL Server no existe administrado en Render ni Railway; las opciones son Azure App Service con Azure SQL, o un contenedor con SQL Server.
+El despliegue en **Render** está definido en [`render.yaml`](render.yaml): SQL Server Express en un servicio privado con disco persistente y la API como servicio web, que se redespliega sola cuando pasan las pruebas. Pasos, costos (los discos y servicios privados son de pago), lo que se verificó y los límites en [`docs/despliegue.md`](docs/despliegue.md). **Sistema desplegado:** _(URL por completar tras crear el Blueprint)_.
 
 ## Documentación
 
@@ -156,8 +156,9 @@ El despliegue (CD) aún no está definido: SQL Server no existe administrado en 
 | Diagramas (dominio, aplicación, secuencias) | [`docs/architecture/diagramas/`](docs/architecture/diagramas) |
 | ADR-001 a ADR-010 | [`docs/architecture/adr/`](docs/architecture/adr) |
 | Matriz de trazabilidad (también en `.docx` y `.pdf`) | [`docs/architecture/matriz_trazabilidad.md`](docs/architecture/matriz_trazabilidad.md) |
-| Registro de cambios (C-01 a C-39) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
+| Registro de cambios (C-01 a C-40) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
 | OpenAPI | [`docs/api/openapi.json`](docs/api/openapi.json) |
+| Despliegue en Render (pasos, costos y límites) | [`docs/despliegue.md`](docs/despliegue.md) |
 | Guía de uso de la API: campos, folios, datos de prueba y recorridos (también en `.docx` y `.pdf`) | [`docs/api/guia_de_uso.md`](docs/api/guia_de_uso.md) |
 
 ### Regenerar los documentos Word y PDF
