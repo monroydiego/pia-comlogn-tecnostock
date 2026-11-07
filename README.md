@@ -134,7 +134,7 @@ dotnet test                                  # 169 unitarias + 49 de integració
 ./scripts/pruebas-con-cobertura.sh           # une la cobertura y falla si es menor a 80%
 ```
 
-Cada escenario Gherkin tiene su prueba y la matriz de trazabilidad se verifica automáticamente (`TrazabilidadPruebas`). Última ejecución completa: **218 pruebas en verde** (169 unitarias y 49 de integración); la cobertura se mide con `scripts/pruebas-con-cobertura.sh` (ver su resultado en el reporte). Cada prueba lleva en su nombre la historia que cubre (por ejemplo `US07_CU03_Saldo_insuficiente...`). Cada fixture de integración crea su propia base de datos y la elimina al terminar, así que no toca los datos de desarrollo.
+Cada escenario Gherkin tiene su prueba y la matriz de trazabilidad se verifica automáticamente (`TrazabilidadPruebas`). Última ejecución completa: **218 pruebas en verde** (169 unitarias y 49 de integración); **98.7% de cobertura de líneas** y 91.8% de ramas (el umbral exigido es 80%), medidas con `scripts/pruebas-con-cobertura.sh`. Cada prueba lleva en su nombre la historia que cubre (por ejemplo `US07_CU03_Saldo_insuficiente...`). Cada fixture de integración crea su propia base de datos y la elimina al terminar, así que no toca los datos de desarrollo.
 
 ## CI/CD
 
