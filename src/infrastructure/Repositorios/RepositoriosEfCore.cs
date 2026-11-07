@@ -32,7 +32,7 @@ public sealed class RepositorioDeUnidadesEfCore(ContextoDeDatos ctx) : IReposito
 
     public UnidadInventario? ObtenerUnidadDisponible(ProductoId productoId, SucursalId sucursal) =>
         ctx.Unidades.Where(u => u.ProductoId == productoId && u.SucursalActual == sucursal && u.Estado == EstadoDeUnidad.Disponible)
-            .OrderBy(u => u.Id).FirstOrDefault();
+            .OrderBy(u => u.Serie).ThenBy(u => u.Id).FirstOrDefault();
 
     public UnidadInventario? ObtenerUnidadParaVenta(ProductoId productoId, SucursalId sucursal,
         NumeroDeSerie? serieCapturada, IReadOnlyCollection<UnidadId>? excluidas = null)
@@ -42,7 +42,7 @@ public sealed class RepositorioDeUnidadesEfCore(ContextoDeDatos ctx) : IReposito
         return serieCapturada is not null
             ? consulta.FirstOrDefault(u => u.Serie == serieCapturada)
             : consulta.Where(u => u.SucursalActual == sucursal && u.Estado == EstadoDeUnidad.Disponible)
-                .OrderBy(u => u.Id).FirstOrDefault();
+                .OrderBy(u => u.Serie).ThenBy(u => u.Id).FirstOrDefault();
     }
 
     public void Agregar(UnidadInventario unidad) => ctx.Unidades.Add(unidad);

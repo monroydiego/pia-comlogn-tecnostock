@@ -40,7 +40,9 @@ public static class DependencyInjection
 
     public static IServiceCollection AddInfraestructura(this IServiceCollection servicios, IConfiguration cfg)
     {
-        servicios.AddDbContext<ContextoDeDatos>(o => o.UseSqlServer(ConstruirCadenaDeConexion(cfg)));
+        // Consultas divididas: una venta o una política cargan varias colecciones y una sola consulta con JOIN multiplicaría las filas.
+        servicios.AddDbContext<ContextoDeDatos>(o => o.UseSqlServer(ConstruirCadenaDeConexion(cfg),
+            sql => sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
         servicios.AddScoped<IRepositorioDeApartados, RepositorioDeApartadosEfCore>();
         servicios.AddScoped<IRepositorioDeUnidades, RepositorioDeUnidadesEfCore>();

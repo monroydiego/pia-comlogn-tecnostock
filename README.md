@@ -71,6 +71,8 @@ No hay secretos en el repositorio: `.env` está en `.gitignore` y `.env.example`
 
 ## Uso de la API
 
+La guía completa con los nombres de los campos, la nomenclatura de los folios, los datos de prueba y recorridos paso a paso está en [`docs/api/guia_de_uso.md`](docs/api/guia_de_uso.md).
+
 Las operaciones de escritura identifican al operador con encabezados (puerto `IContextoDeUsuario`):
 
 ```
@@ -154,8 +156,9 @@ El despliegue (CD) aún no está definido: SQL Server no existe administrado en 
 | Diagramas (dominio, aplicación, secuencias) | [`docs/architecture/diagramas/`](docs/architecture/diagramas) |
 | ADR-001 a ADR-010 | [`docs/architecture/adr/`](docs/architecture/adr) |
 | Matriz de trazabilidad | [`docs/architecture/matriz_trazabilidad.md`](docs/architecture/matriz_trazabilidad.md) |
-| Registro de cambios (C-01 a C-35) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
+| Registro de cambios (C-01 a C-36) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
 | OpenAPI | [`docs/api/openapi.json`](docs/api/openapi.json) |
+| Guía de uso de la API (campos, folios, datos de prueba y recorridos) | [`docs/api/guia_de_uso.md`](docs/api/guia_de_uso.md) |
 
 ## Limitaciones conocidas
 
