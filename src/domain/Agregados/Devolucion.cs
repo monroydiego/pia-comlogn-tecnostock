@@ -15,7 +15,10 @@ public sealed class Devolucion : RaizDeAgregado
     public MotivoDeDevolucion Motivo { get; private set; } = null!;
     public CondicionDelProducto Condicion { get; private set; }
     public FormaDeCompensacion FormaDeCompensacion { get; private set; }
-    public DictamenDeDevolucion Dictamen { get; private set; } = null!;
+    // Los resultados de cada regla se guardan como filas hijas (1FN); el dictamen se reconstruye a partir de ellos.
+    private readonly List<ResultadoDeRegla> _resultadosDelDictamen = new();
+    public IReadOnlyList<ResultadoDeRegla> ResultadosDelDictamen => _resultadosDelDictamen;
+    public DictamenDeDevolucion Dictamen => new(_resultadosDelDictamen);
     public DecisionDeSupervisor? Decision { get; private set; }
     public EstadoDeDevolucion Estado { get; private set; }
     public Operador Cajero { get; private set; } = null!;
@@ -35,9 +38,11 @@ public sealed class Devolucion : RaizDeAgregado
         var devolucion = new Devolucion
         {
             Folio = folio, FolioDeVenta = venta.Folio, UnidadDevuelta = linea.UnidadId, Motivo = motivo,
-            Condicion = condicion, FormaDeCompensacion = forma, Dictamen = dictamen, Cajero = operador,
+            Condicion = condicion, FormaDeCompensacion = forma, Cajero = operador,
             FechaDeSolicitud = ahora, Estado = EstadoDeDevolucion.EnRevision
         };
+
+        devolucion._resultadosDelDictamen.AddRange(dictamen.Resultados);
 
         if (dictamen.Cumple())
         {

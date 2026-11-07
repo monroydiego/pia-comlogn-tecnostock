@@ -10,6 +10,13 @@ public sealed record DecisionDeSupervisor
     public string Motivo { get; }
     public DateTime Fecha { get; }
 
+    private DecisionDeSupervisor()
+    {
+        // Solo para EF Core: la decisión se reconstruye desde columnas.
+        Supervisor = null!;
+        Motivo = null!;
+    }
+
     private DecisionDeSupervisor(Operador supervisor, bool autoriza, string motivo, DateTime fecha)
     {
         Supervisor = supervisor;

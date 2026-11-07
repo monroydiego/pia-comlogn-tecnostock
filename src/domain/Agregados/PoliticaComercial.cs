@@ -13,9 +13,16 @@ public sealed class PoliticaComercial : RaizDeAgregado
     /// <summary>Porcentaje del precio como anticipo mínimo, en porcentaje (30 = 30%).</summary>
     public decimal PorcentajeDeAnticipoMinimo { get; private set; }
     public int PlazoMaximoDeApartadoEnDias { get; private set; }
-    public IReadOnlyList<MetodoDePago> MetodosAutorizados { get; private set; } = [];
-    public IReadOnlyDictionary<CategoriaDeProducto, int> PlazoDeDevolucionEnDiasPorCategoria { get; private set; } =
-        new Dictionary<CategoriaDeProducto, int>();
+
+    // Se guardan como filas hijas (una por método y una por categoría) para respetar la primera forma normal.
+    private readonly List<MetodoDePagoAutorizado> _autorizacionesDePago = new();
+    private readonly List<PlazoDeDevolucion> _plazosDeDevolucion = new();
+    public IReadOnlyList<MetodoDePagoAutorizado> AutorizacionesDePago => _autorizacionesDePago;
+    public IReadOnlyList<PlazoDeDevolucion> PlazosDeDevolucion => _plazosDeDevolucion;
+
+    public IReadOnlyList<MetodoDePago> MetodosAutorizados => _autorizacionesDePago.Select(a => a.Metodo).ToList();
+    public IReadOnlyDictionary<CategoriaDeProducto, int> PlazoDeDevolucionEnDiasPorCategoria =>
+        _plazosDeDevolucion.ToDictionary(p => p.Categoria, p => p.Dias);
 
     private PoliticaComercial() { }
 
@@ -26,13 +33,14 @@ public sealed class PoliticaComercial : RaizDeAgregado
         if (plazoMaximoDeApartadoEnDias <= 0) throw new ArgumentException("La vigencia del apartado debe ser positiva.");
         var metodos = metodosAutorizados.Distinct().ToList();
         if (metodos.Count == 0) throw new ArgumentException("Debe haber al menos un método de pago autorizado.");
-        return new PoliticaComercial
+        var politica = new PoliticaComercial
         {
             PorcentajeDeAnticipoMinimo = porcentajeDeAnticipoMinimo,
-            PlazoMaximoDeApartadoEnDias = plazoMaximoDeApartadoEnDias,
-            MetodosAutorizados = metodos,
-            PlazoDeDevolucionEnDiasPorCategoria = new Dictionary<CategoriaDeProducto, int>(plazoDeDevolucionEnDiasPorCategoria)
+            PlazoMaximoDeApartadoEnDias = plazoMaximoDeApartadoEnDias
         };
+        politica._autorizacionesDePago.AddRange(metodos.Select(m => new MetodoDePagoAutorizado(m)));
+        politica._plazosDeDevolucion.AddRange(plazoDeDevolucionEnDiasPorCategoria.Select(p => new PlazoDeDevolucion(p.Key, p.Value)));
+        return politica;
     }
 
     /// <summary>Valores [Supuesto] del BRD 7.1: anticipo 30%, 7 días, devolución 15/30 días, Efectivo, Tarjeta y Transferencia.</summary>
