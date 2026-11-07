@@ -130,11 +130,11 @@ Dependencias: `api → application → domain`; `infrastructure → application 
 ```bash
 docker compose up -d db                      # SQL Server para las pruebas de integración
 set -a; source .env; set +a                  # DB_HOST, DB_PORT y MSSQL_SA_PASSWORD
-dotnet test                                  # 169 unitarias + 49 de integración
+dotnet test                                  # 175 unitarias + 61 de integración
 ./scripts/pruebas-con-cobertura.sh           # une la cobertura y falla si es menor a 80%
 ```
 
-Cada escenario Gherkin tiene su prueba y la matriz de trazabilidad se verifica automáticamente (`TrazabilidadPruebas`). Última ejecución completa: **218 pruebas en verde** (169 unitarias y 49 de integración); **98.7% de cobertura de líneas** y 91.8% de ramas (el umbral exigido es 80%), medidas con `scripts/pruebas-con-cobertura.sh` (98.2% dentro de Docker Compose). Cada prueba lleva en su nombre la historia que cubre (por ejemplo `US07_CU03_Saldo_insuficiente...`). Cada fixture de integración crea su propia base de datos y la elimina al terminar, así que no toca los datos de desarrollo.
+Cada escenario Gherkin tiene su prueba y la matriz de trazabilidad se verifica automáticamente (`TrazabilidadPruebas`). Última ejecución completa: **236 pruebas en verde** (175 unitarias y 61 de integración); **98.7% de cobertura de líneas** y 91.1% de ramas (el umbral exigido es 80%), medidas con `scripts/pruebas-con-cobertura.sh` (98.1% dentro de Docker Compose). Cada prueba lleva en su nombre la historia que cubre (por ejemplo `US07_CU03_Saldo_insuficiente...`). Cada fixture de integración crea su propia base de datos y la elimina al terminar, así que no toca los datos de desarrollo.
 
 ## CI/CD
 
@@ -149,14 +149,15 @@ El despliegue en **Render** está definido en [`render.yaml`](render.yaml): SQL 
 
 | Documento | Ubicación |
 |---|---|
+| **Reporte final** (BRD, arquitectura, evidencias y conclusiones; también en `.docx` y `.pdf`) | [`docs/reporte_final.md`](docs/reporte_final.md) |
 | BRD (necesidades BR-001 a BR-008, reglas RN-*) | [`docs/BRD.md`](docs/BRD.md) |
 | Historias de usuario con Gherkin (US01 a US20) | [`docs/analisis/historias_de_usuario.md`](docs/analisis/historias_de_usuario.md) |
 | Glosario (lenguaje ubicuo) | [`docs/analisis/glosario.md`](docs/analisis/glosario.md) |
 | BPMN | [`docs/analisis/bpmn/BPMN.md`](docs/analisis/bpmn/BPMN.md) |
-| Diagramas (dominio, aplicación, secuencias) | [`docs/architecture/diagramas/`](docs/architecture/diagramas) |
+| Diagramas (dominio, aplicación, secuencias y modelo de datos, en `.mmd` y `.png`) | [`docs/architecture/diagramas/`](docs/architecture/diagramas) |
 | ADR-001 a ADR-010 | [`docs/architecture/adr/`](docs/architecture/adr) |
 | Matriz de trazabilidad (también en `.docx` y `.pdf`) | [`docs/architecture/matriz_trazabilidad.md`](docs/architecture/matriz_trazabilidad.md) |
-| Registro de cambios (C-01 a C-40) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
+| Registro de cambios (C-01 a C-41) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
 | OpenAPI | [`docs/api/openapi.json`](docs/api/openapi.json) |
 | Despliegue en Render (pasos, costos y límites) | [`docs/despliegue.md`](docs/despliegue.md) |
 | Guía de uso de la API: campos, folios, datos de prueba y recorridos (también en `.docx` y `.pdf`) | [`docs/api/guia_de_uso.md`](docs/api/guia_de_uso.md) |

@@ -2,7 +2,7 @@
 
 Relaciona cada necesidad, regla e historia con su caso de uso, componentes, ADR y **pruebas automáticas reales**. Todos los nombres entre acentos graves son clases o métodos de prueba que existen en `tests/`: la prueba `TrazabilidadPruebas` falla si alguno desaparece o si un escenario Gherkin implementado se queda sin prueba.
 
-**Resumen:** los 44 escenarios Gherkin están en la sección 3. Los 41 que pertenecen a historias implementadas tienen al menos una prueba unitaria, y 40 de ellos también una de integración contra la API real (el escenario «Operación rechazada» de US12 solo tiene prueba unitaria). Los 3 restantes (US15, US18 y US19) están documentados y no se implementan. En total hay 218 casos de prueba, de 187 métodos: 169 unitarios y 49 de integración, contando los casos de las pruebas parametrizadas. La cobertura de líneas es 98.7% (ramas 91.8%).
+**Resumen:** los 44 escenarios Gherkin están en la sección 3. Los 41 que pertenecen a historias implementadas tienen al menos una prueba unitaria, y 40 de ellos también una de integración contra la API real (el escenario «Operación rechazada» de US12 solo tiene prueba unitaria). Los 3 restantes (US15, US18 y US19) están documentados y no se implementan. En total hay 236 casos de prueba, de 200 métodos: 175 unitarios y 61 de integración, contando los casos de las pruebas parametrizadas. La cobertura de líneas es 98.7% (ramas 91.1%).
 
 ## 1. Necesidades de negocio
 
