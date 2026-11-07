@@ -156,7 +156,7 @@ El despliegue (CD) aún no está definido: SQL Server no existe administrado en 
 | Diagramas (dominio, aplicación, secuencias) | [`docs/architecture/diagramas/`](docs/architecture/diagramas) |
 | ADR-001 a ADR-010 | [`docs/architecture/adr/`](docs/architecture/adr) |
 | Matriz de trazabilidad (también en `.docx` y `.pdf`) | [`docs/architecture/matriz_trazabilidad.md`](docs/architecture/matriz_trazabilidad.md) |
-| Registro de cambios (C-01 a C-38) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
+| Registro de cambios (C-01 a C-39) | [`docs/cambios/registro_de_cambios.md`](docs/cambios/registro_de_cambios.md) |
 | OpenAPI | [`docs/api/openapi.json`](docs/api/openapi.json) |
 | Guía de uso de la API: campos, folios, datos de prueba y recorridos (también en `.docx` y `.pdf`) | [`docs/api/guia_de_uso.md`](docs/api/guia_de_uso.md) |
 
