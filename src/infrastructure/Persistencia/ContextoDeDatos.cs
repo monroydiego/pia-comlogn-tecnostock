@@ -27,20 +27,20 @@ public sealed class ContextoDeDatos(DbContextOptions<ContextoDeDatos> opciones) 
     protected override void ConfigureConventions(ModelConfigurationBuilder c)
     {
         c.Properties<Dinero>().HaveConversion<DineroConversor>().HaveColumnType("decimal(18,2)");
-        c.Properties<NumeroDeSerie>().HaveConversion<NumeroDeSerieConversor>().HaveMaxLength(60).AreUnicode(false);
-        c.Properties<Folio>().HaveConversion<FolioConversor>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<ProductoId>().HaveConversion<ProductoIdConversor>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<SucursalId>().HaveConversion<SucursalIdConversor>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<ClienteId>().HaveConversion<ClienteIdConversor>().HaveMaxLength(30).AreUnicode(false);
+        c.Properties<NumeroDeSerie>().HaveConversion<NumeroDeSerieConversor>().HaveMaxLength(Limites.Serie).AreUnicode(false);
+        c.Properties<Folio>().HaveConversion<FolioConversor>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<ProductoId>().HaveConversion<ProductoIdConversor>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<SucursalId>().HaveConversion<SucursalIdConversor>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<ClienteId>().HaveConversion<ClienteIdConversor>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
         c.Properties<UnidadId>().HaveConversion<UnidadIdConversor>();
-        c.Properties<EstadoDeApartado>().HaveConversion<string>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<EstadoDeUnidad>().HaveConversion<string>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<EstadoDeDevolucion>().HaveConversion<string>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<CondicionDelProducto>().HaveConversion<string>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<FormaDeCompensacion>().HaveConversion<string>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<MetodoDePago>().HaveConversion<string>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<Rol>().HaveConversion<string>().HaveMaxLength(30).AreUnicode(false);
-        c.Properties<CategoriaDeProducto>().HaveConversion<string>().HaveMaxLength(30).AreUnicode(false);
+        c.Properties<EstadoDeApartado>().HaveConversion<string>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<EstadoDeUnidad>().HaveConversion<string>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<EstadoDeDevolucion>().HaveConversion<string>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<CondicionDelProducto>().HaveConversion<string>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<FormaDeCompensacion>().HaveConversion<string>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<MetodoDePago>().HaveConversion<string>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<Rol>().HaveConversion<string>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
+        c.Properties<CategoriaDeProducto>().HaveConversion<string>().HaveMaxLength(Limites.Codigo).AreUnicode(false);
     }
 
     protected override void OnModelCreating(ModelBuilder m)

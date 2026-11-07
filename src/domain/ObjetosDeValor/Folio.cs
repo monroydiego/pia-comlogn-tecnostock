@@ -1,3 +1,5 @@
+using TecnoStock.Dominio.Comun;
+
 namespace TecnoStock.Dominio.ObjetosDeValor;
 
 public sealed record Folio
@@ -6,8 +8,7 @@ public sealed record Folio
 
     public Folio(string valor)
     {
-        if (string.IsNullOrWhiteSpace(valor)) throw new ArgumentException("El folio no puede estar vacío.", nameof(valor));
-        Valor = valor.Trim();
+        Valor = Limites.Texto(valor, Limites.Codigo, "El folio");
     }
 
     public override string ToString() => Valor;

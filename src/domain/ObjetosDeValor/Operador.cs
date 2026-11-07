@@ -1,3 +1,4 @@
+using TecnoStock.Dominio.Comun;
 using TecnoStock.Dominio.Enumeraciones;
 
 namespace TecnoStock.Dominio.ObjetosDeValor;
@@ -10,8 +11,7 @@ public sealed record Operador
 
     public Operador(string usuarioId, Rol rol)
     {
-        if (string.IsNullOrWhiteSpace(usuarioId)) throw new ArgumentException("El usuario es obligatorio.", nameof(usuarioId));
-        UsuarioId = usuarioId.Trim();
+        UsuarioId = Limites.Texto(usuarioId, Limites.Usuario, "El usuario");
         Rol = rol;
     }
 

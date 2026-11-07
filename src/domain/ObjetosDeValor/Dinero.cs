@@ -9,6 +9,7 @@ public readonly record struct Dinero
     public Dinero(decimal monto, string moneda = "MXN")
     {
         if (monto < 0) throw new ArgumentException("El monto no puede ser negativo.", nameof(monto));
+        if (monto > Comun.Limites.MontoMaximo) throw new ArgumentException($"El monto no puede exceder {Comun.Limites.MontoMaximo:N2}.", nameof(monto));
         Monto = decimal.Round(monto, 2);
         Moneda = moneda;
     }

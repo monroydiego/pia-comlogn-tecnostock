@@ -10,7 +10,7 @@ ArchivoEnv.CargarSiExiste();
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAplicacion().AddInfraestructura(builder.Configuration);
 builder.Services.AddScoped<IContextoDeUsuario, ContextoDeUsuarioPorEncabezados>();

@@ -1,3 +1,5 @@
+using TecnoStock.Dominio.Comun;
+
 namespace TecnoStock.Dominio.ObjetosDeValor;
 
 public sealed record NumeroDeSerie
@@ -6,8 +8,7 @@ public sealed record NumeroDeSerie
 
     public NumeroDeSerie(string valor)
     {
-        if (string.IsNullOrWhiteSpace(valor)) throw new ArgumentException("La serie no puede estar vacía.", nameof(valor));
-        Valor = valor.Trim().ToUpperInvariant();
+        Valor = Limites.Texto(valor, Limites.Serie, "La serie").ToUpperInvariant();
     }
 
     public override string ToString() => Valor;

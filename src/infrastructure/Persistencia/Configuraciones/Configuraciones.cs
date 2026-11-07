@@ -21,7 +21,7 @@ internal static class Comunes
     {
         b.OwnsOne(navegacion, o =>
         {
-            o.Property(p => p.UsuarioId).HasColumnName(prefijo + "UsuarioId").HasMaxLength(60);
+            o.Property(p => p.UsuarioId).HasColumnName(prefijo + "UsuarioId").HasMaxLength(Limites.Usuario);
             o.Property(p => p.Rol).HasColumnName(prefijo + "Rol");
         });
         b.Navigation(navegacion).IsRequired();
@@ -32,11 +32,11 @@ internal static class Comunes
         b.OwnsOne(navegacion, d =>
         {
             d.Property(p => p.Autoriza).HasColumnName(prefijo + "Autoriza");
-            d.Property(p => p.Motivo).HasColumnName(prefijo + "Motivo").HasMaxLength(500);
+            d.Property(p => p.Motivo).HasColumnName(prefijo + "Motivo").HasMaxLength(Limites.MotivoDeDecision);
             d.Property(p => p.Fecha).HasColumnName(prefijo + "Fecha");
             d.OwnsOne(p => p.Supervisor, s =>
             {
-                s.Property(x => x.UsuarioId).HasColumnName(prefijo + "SupervisorUsuarioId").HasMaxLength(60);
+                s.Property(x => x.UsuarioId).HasColumnName(prefijo + "SupervisorUsuarioId").HasMaxLength(Limites.Usuario);
                 s.Property(x => x.Rol).HasColumnName(prefijo + "SupervisorRol");
             });
             d.Navigation(p => p.Supervisor).IsRequired();
@@ -74,7 +74,7 @@ internal sealed class ProductoConfiguracion : IEntityTypeConfiguration<Producto>
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).ValueGeneratedNever();
         b.Raiz();
-        b.Property(x => x.Sku).HasMaxLength(30);
+        b.Property(x => x.Sku).HasMaxLength(Limites.Codigo);
         b.Property(x => x.Nombre).HasMaxLength(120);
     }
 }
@@ -203,8 +203,8 @@ internal sealed class DevolucionConfiguracion : IEntityTypeConfiguration<Devoluc
         b.HasOne<UnidadInventario>().WithMany().HasForeignKey(x => x.UnidadDevuelta).OnDelete(DeleteBehavior.Restrict);
         b.OwnsOne(x => x.Motivo, o =>
         {
-            o.Property(p => p.Causal).HasColumnName("MotivoCausal").HasMaxLength(100);
-            o.Property(p => p.Detalle).HasColumnName("MotivoDetalle").HasMaxLength(500);
+            o.Property(p => p.Causal).HasColumnName("MotivoCausal").HasMaxLength(Limites.Causal);
+            o.Property(p => p.Detalle).HasColumnName("MotivoDetalle").HasMaxLength(Limites.DetalleDeMotivo);
         });
         b.Navigation(x => x.Motivo).IsRequired();
         b.Operador(x => x.Cajero, "Cajero");
@@ -235,7 +235,7 @@ internal sealed class ComprobanteConfiguracion : IEntityTypeConfiguration<Compro
         b.Property(x => x.Tipo).HasMaxLength(30).IsUnicode(false);
         // Referencia a un apartado, venta o devolución según Tipo: es polimórfica, por eso no lleva FK.
         b.Property(x => x.FolioDeOperacion).HasMaxLength(30).IsUnicode(false);
-        b.Property(x => x.Usuario).HasMaxLength(60);
+        b.Property(x => x.Usuario).HasMaxLength(Limites.Usuario);
         b.HasMany(x => x.Lineas).WithOne().HasForeignKey(l => l.FolioDeComprobante).OnDelete(DeleteBehavior.Cascade);
         b.HasIndex(x => x.FolioDeOperacion);
     }

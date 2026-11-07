@@ -31,8 +31,6 @@ public sealed record DecisionDeSupervisor
         if (!operador.EsSupervisor())
             throw new ReglaDeNegocioViolada(MotivoDeRechazo.SoloSupervisorAutoriza,
                 "Solo un Supervisor puede autorizar esta operación.");
-        if (string.IsNullOrWhiteSpace(motivo))
-            throw new ArgumentException("El motivo de la decisión es obligatorio.", nameof(motivo));
-        return new DecisionDeSupervisor(operador, autoriza, motivo.Trim(), ahora);
+        return new DecisionDeSupervisor(operador, autoriza, Limites.Texto(motivo, Limites.MotivoDeDecision, "El motivo de la decisión"), ahora);
     }
 }

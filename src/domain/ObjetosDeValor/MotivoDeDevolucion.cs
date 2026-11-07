@@ -1,3 +1,5 @@
+using TecnoStock.Dominio.Comun;
+
 namespace TecnoStock.Dominio.ObjetosDeValor;
 
 public sealed record MotivoDeDevolucion
@@ -7,8 +9,7 @@ public sealed record MotivoDeDevolucion
 
     public MotivoDeDevolucion(string causal, string detalle = "")
     {
-        if (string.IsNullOrWhiteSpace(causal)) throw new ArgumentException("La causal es obligatoria.", nameof(causal));
-        Causal = causal.Trim();
-        Detalle = detalle?.Trim() ?? string.Empty;
+        Causal = Limites.Texto(causal, Limites.Causal, "La causal");
+        Detalle = Limites.TextoOpcional(detalle, Limites.DetalleDeMotivo, "El detalle");
     }
 }
