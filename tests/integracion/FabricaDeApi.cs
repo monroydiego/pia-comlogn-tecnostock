@@ -85,6 +85,20 @@ public static class AyudasHttp
         return new Respuesta(respuesta.StatusCode, json);
     }
 
+    /// <summary>Envía el JSON tal cual (sin volver a serializarlo): sirve para probar valores que un objeto C# no puede expresar.</summary>
+    public static async Task<Respuesta> PostJson(this HttpClient cliente, string url, string json, string? rol = "Cajero", string usuario = "usuario1")
+    {
+        var peticion = new HttpRequestMessage(HttpMethod.Post, url) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
+        if (rol is not null)
+        {
+            peticion.Headers.Add("X-Usuario", usuario);
+            peticion.Headers.Add("X-Rol", rol);
+        }
+        var respuesta = await cliente.SendAsync(peticion);
+        var texto = await respuesta.Content.ReadAsStringAsync();
+        return new Respuesta(respuesta.StatusCode, string.IsNullOrWhiteSpace(texto) ? default : JsonDocument.Parse(texto).RootElement.Clone());
+    }
+
     public static Task<Respuesta> Post(this HttpClient c, string url, object? cuerpo = null, string? rol = "Cajero") => c.Enviar(HttpMethod.Post, url, cuerpo, rol);
     public static Task<Respuesta> Get(this HttpClient c, string url) => c.Enviar(HttpMethod.Get, url, null, null);
 

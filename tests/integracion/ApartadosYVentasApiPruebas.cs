@@ -91,7 +91,7 @@ public sealed class ApartadosYVentasApiPruebas : IClassFixture<FabricaDeApi>
     [Fact]
     public async Task US11_Metodo_de_pago_fuera_del_catalogo_responde_400()
     {
-        var r = await _http.Enviar(HttpMethod.Post, "/ventas",
+        var r = await _http.PostJson("/ventas",
             "{\"sucursalId\":\"SUC-01\",\"lineas\":[{\"productoId\":\"TEC-P004\"}],\"pagos\":[{\"metodo\":\"Cheque\",\"monto\":549}]}");
         Assert.Equal(HttpStatusCode.BadRequest, r.Codigo);
     }
