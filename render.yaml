@@ -1,0 +1,47 @@
+# Blueprint de Render para TecnoStock: SQL Server en un servicio privado con disco persistente + la API como servicio web.
+# Pasos y costos en docs/despliegue.md.
+services:
+  # --- Base de datos: SQL Server 2022 Express (no existe SQL Server administrado en Render) ---
+  - type: pserv
+    name: tecnostock-db
+    runtime: docker
+    dockerfilePath: ./deploy/sqlserver/Dockerfile
+    dockerContext: ./deploy/sqlserver
+    plan: 1c-2g                  # SQL Server necesita al menos 2 GB de RAM
+    region: oregon
+    autoDeployTrigger: "off"     # reiniciar la base interrumpe el servicio: se redespliega a mano
+    disk:
+      name: sqlserver-datos
+      mountPath: /var/opt/mssql
+      sizeGB: 5                  # Express admite hasta 10 GB por base; el disco se puede ampliar, no reducir
+    envVars:
+      - key: MSSQL_SA_PASSWORD
+        sync: false              # Render la pide al crear el Blueprint; debe ser la misma que la de la API
+      - key: PORT
+        value: "1433"            # puerto en el que escucha SQL Server
+
+  # --- API REST con Swagger ---
+  - type: web
+    name: tecnostock-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile # la última etapa del Dockerfile es la API
+    plan: 0.5c-512mb
+    region: oregon               # misma región que la base para usar la red privada
+    autoDeployTrigger: checksPass  # despliega solo cuando pasan las pruebas de GitHub Actions
+    healthCheckPath: /politica/devolucion   # consulta la base de datos: no marca sana la API si no hay conexión
+    envVars:
+      - key: PORT
+        value: "8080"            # el puerto en el que escucha la imagen (ASPNETCORE_URLS)
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: tecnostock-db
+          property: host
+      - key: DB_PORT
+        value: "1433"
+      - key: DB_NAME
+        value: TecnoStock
+      - key: MSSQL_SA_PASSWORD
+        sync: false              # la misma contraseña que en tecnostock-db
