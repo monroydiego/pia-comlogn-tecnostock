@@ -30,9 +30,10 @@ var app = builder.Build();
 await Sembrador.InicializarAsync(app.Services, Path.Combine(AppContext.BaseDirectory, "datos"));
 
 app.UseExceptionHandler();
+app.UseDefaultFiles();   // sirve wwwroot/index.html en "/" (frontend de TecnoStock)
+app.UseStaticFiles();
 app.UseSwagger();
 app.UseSwaggerUI(o => o.SwaggerEndpoint("/swagger/v1/swagger.json", "TecnoStock API v1"));
-app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 app.MapControllers();
 
 app.Run();
